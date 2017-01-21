@@ -11,11 +11,15 @@ application = get_wsgi_application()
 # Your application specific imports
 from data.models import *
 
+from random import Random
+
 import praw
 
 reddit = praw.Reddit(client_id='ufxVBVi9_Z03Gg',
                      client_secret='_zyrtt2C1oF2020U3dIBVHMb7V0',
                      user_agent='unix:modt:v0.1 (by /u/ssjjawa)')
+
+r = Random()
 
 # Priority Algorithm
 # Broken into n bins size 2^(i + 8) starting at i = 0
@@ -90,7 +94,10 @@ if __name__ == '__main__':
             query_sub(reddit, sub)
 
         for _ in range(25):
-            sub = reddit.random_subreddit()
+            b = False
+            if r.random() <= 0.05:
+                b = True
+            sub = reddit.random_subreddit(nsfw=b)
             print("Querying " + sub.display_name)
             query_sub(reddit, sub.display_name)
 
