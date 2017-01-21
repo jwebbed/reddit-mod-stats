@@ -1,10 +1,10 @@
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django.db.backends.sqlite3',
         'NAME': 'mods',
         'USER': 'modsuser',
-        'PASSWORD': '',
+        'PASSWORD': 'pw',
         'HOST': 'localhost',
         'PORT': '',
     }
