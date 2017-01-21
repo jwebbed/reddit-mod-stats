@@ -89,9 +89,9 @@ if __name__ == '__main__':
             print("Updating " + sub)
             query_sub(reddit, sub)
 
-        for _ in range(50):
+        for _ in range(25):
             sub = reddit.random_subreddit()
             print("Querying " + sub.display_name)
             query_sub(reddit, sub.display_name)
 
-        sleep(1)
+        sleep(2.5)
