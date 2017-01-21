@@ -10,7 +10,7 @@ class User(models.Model):
     username = models.CharField(max_length=20, primary_key=True)
 
 class Subreddit(models.Model):
-    name = models.CharField(max_length=20, primary_key=True)
+    name = models.CharField(max_length=22, primary_key=True)
     subscribers = models.IntegerField()
     last_checked = models.DateTimeField(auto_now_add=True)
     last_changed = models.DateTimeField(auto_now_add=True)
