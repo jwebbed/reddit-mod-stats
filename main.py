@@ -101,4 +101,4 @@ if __name__ == '__main__':
             print("Querying " + sub.display_name)
             query_sub(reddit, sub.display_name)
 
-        sleep(10)
+        sleep(3)
