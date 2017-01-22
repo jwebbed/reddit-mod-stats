@@ -117,7 +117,7 @@ def simple_method(reddit):
 
     def rall_action_impl():
         print("Querying top 100 r/all subs")
-        for sub in [post.subreddit.display_name for post in reddit.subreddit('all').hot(limit=100)]:
+        for sub in set([post.subreddit.display_name for post in reddit.subreddit('all').hot(limit=100)]):
             print("Querying " + sub)
             query_sub(reddit, sub)
 
