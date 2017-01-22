@@ -113,13 +113,18 @@ def simple_method(reddit):
     rall_last_checked = datetime(1970, 1, 1)
     rall_time_delta = timedelta(hours=4)
 
+    random_last_checked = datetime(1970, 1, 1)
+    random_time_delta = timedelta(seconds=30)
+
     while True:
         now = datetime.now()
 
+        print("Checking and updating recently changed")
         for sub in get_subs_by_last_changed():
             print("Updating " + sub)
             query_sub(reddit, sub)
 
+        print("Checking and updating with frequency on size")
         for sub in get_subs():
             print("Updating " + sub)
             query_sub(reddit, sub)
@@ -131,15 +136,16 @@ def simple_method(reddit):
                 query_sub(reddit, sub)
             rall_last_checked = now
 
-        for _ in range(10):
-            b = False
-            if r.random() <= 0.05:
-                b = True
-            sub = reddit.random_subreddit(nsfw=b)
-            print("Querying " + sub.display_name)
-            query_sub(reddit, sub.display_name)
-
-        sleep(3)
+        if random_last_checked < now - random_time_delta:
+            print("Querying random")
+            for _ in range(10):
+                b = False
+                if r.random() <= 0.05:
+                    b = True
+                sub = reddit.random_subreddit(nsfw=b)
+                print("Querying " + sub.display_name)
+                query_sub(reddit, sub.display_name)
+            random_last_checked = now
 
 if __name__ == '__main__':
     reddit = praw.Reddit(client_id='ufxVBVi9_Z03Gg',
