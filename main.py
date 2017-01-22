@@ -108,13 +108,34 @@ def query_sub(r, sub):
     query.save()
 
 def simple_method(reddit):
+    def action(name, delta, action):
+        action_entry = LastChecked.objects.get_or_create(name=name)[0]
+        def perform():
+            if action_entry.last_checked < datetime.now() - delta:
+                action()
+                action_entry.last_checked = now
+                action_entry.save()
+        return perform
+
+    def rall_action_impl():
+        print("Querying top 100 r/all subs")
+        for sub in get_rall_subs(reddit):
+            print("Querying " + sub)
+            query_sub(reddit, sub)
+
+    def random_action_impl():
+        print("Querying random")
+        for _ in range(10):
+            b = False
+            if r.random() <= 0.05:
+                b = True
+            sub = reddit.random_subreddit(nsfw=b)
+            print("Querying " + sub.display_name)
+            query_sub(reddit, sub.display_name)
+
     r = Random()
-
-    rall_last_checked_entry = LastChecked.objects.get_or_create(name='rall')[0]
-    rall_time_delta = timedelta(hours=4)
-
-    random_last_checked_entry = LastChecked.objects.get_or_create(name='random')[0]
-    random_time_delta = timedelta(seconds=30)
+    rall_action = action('rall', timedelta(hours=1), rall_action_impl)
+    random_action = action('random', timedelta(seconds=15), random_action_impl)
 
     while True:
         now = datetime.now()
@@ -129,25 +150,8 @@ def simple_method(reddit):
             print("Updating " + sub)
             query_sub(reddit, sub)
 
-        if rall_last_checked_entry.last_checked < now - rall_time_delta:
-            print("Querying top 100 r/all subs")
-            for sub in get_rall_subs(reddit):
-                print("Querying " + sub)
-                query_sub(reddit, sub)
-            rall_last_checked_entry.last_checked = now
-            rall_last_checked_entry.save()
-
-        if random_last_checked_entry.last_checked < now - random_time_delta:
-            print("Querying random")
-            for _ in range(10):
-                b = False
-                if r.random() <= 0.05:
-                    b = True
-                sub = reddit.random_subreddit(nsfw=b)
-                print("Querying " + sub.display_name)
-                query_sub(reddit, sub.display_name)
-            random_last_checked_entry.last_checked = now
-            random_last_checked_entry.save()
+        rall_action()
+        random_action()
 
 if __name__ == '__main__':
     reddit = praw.Reddit(client_id='ufxVBVi9_Z03Gg',
