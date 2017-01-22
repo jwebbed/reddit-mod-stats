@@ -16,31 +16,29 @@ from math import log2
 
 import praw
 
-reddit = praw.Reddit(client_id='ufxVBVi9_Z03Gg',
-                     client_secret='_zyrtt2C1oF2020U3dIBVHMb7V0',
-                     user_agent='unix:modt:v0.1 (by /u/ssjjawa)')
+def get_rall_subs(r):
+    return [post.subreddit.display_name for post in r.subreddit('all').hot(limit=100)]
 
-r = Random()
-
+# If a sub has been changed in the last week, there seems a higher probability
+# if will be changed more soon. The closer it has been since it last has been changed
+# the higher the frequency we check it starting at 1 minutes and 5s and increasing
+# exponetially
 
 def get_subs_by_last_changed():
     subs = Subreddit.objects.order_by('-last_changed')
     threshold =  datetime.now() - timedelta(days=7)
     now = datetime.now()
     for sub in subs:
-        #print(sub.last_changed)
         if sub.last_changed < threshold:
             print('breaking')
             break
         diff = now - sub.last_changed
         mins = diff.total_seconds() // 60
-        #print(mins)
-        if mins <= 10:
+        if mins <= 1:
             rank = 0
         else:
-            rank = log2(mins // 10)
-        #print(2 ** rank)
-        if sub.last_checked < (now - timedelta(minutes=(2 ** rank))):
+            rank = log2(mins)
+        if sub.last_checked < (now - timedelta(seconds=((2 ** rank) * 5))):
             yield sub.name
 
 
@@ -109,9 +107,15 @@ def query_sub(r, sub):
     query.mods.add(*mods)
     query.save()
 
+def simple_method(reddit):
+    r = Random()
 
-if __name__ == '__main__':
+    rall_last_checked = datetime(1970, 1, 1)
+    rall_time_delta = timedelta(hours=4)
+
     while True:
+        now = datetime.now()
+
         for sub in get_subs_by_last_changed():
             print("Updating " + sub)
             query_sub(reddit, sub)
@@ -119,6 +123,13 @@ if __name__ == '__main__':
         for sub in get_subs():
             print("Updating " + sub)
             query_sub(reddit, sub)
+
+        if rall_last_checked < now - rall_time_delta:
+            print("Querying top 100 r/all subs")
+            for sub in get_rall_subs(reddit):
+                print("Querying " + sub)
+                query_sub(reddit, sub)
+            rall_last_checked = now
 
         for _ in range(10):
             b = False
@@ -129,3 +140,9 @@ if __name__ == '__main__':
             query_sub(reddit, sub.display_name)
 
         sleep(3)
+
+if __name__ == '__main__':
+    reddit = praw.Reddit(client_id='ufxVBVi9_Z03Gg',
+                         client_secret='_zyrtt2C1oF2020U3dIBVHMb7V0',
+                         user_agent='unix:modt:v0.1 (by /u/ssjjawa)')
+    simple_method(reddit)
