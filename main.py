@@ -12,6 +12,7 @@ application = get_wsgi_application()
 from data.models import *
 
 from random import Random
+from math import log2
 
 import praw
 
@@ -20,6 +21,28 @@ reddit = praw.Reddit(client_id='ufxVBVi9_Z03Gg',
                      user_agent='unix:modt:v0.1 (by /u/ssjjawa)')
 
 r = Random()
+
+
+def get_subs_by_last_changed():
+    subs = Subreddit.objects.order_by('last_changed')
+    threshold =  datetime.now() + timedelta(days=7)
+    now = datetime.now()
+    for sub in subs:
+        #print(sub.last_changed)
+        if sub.last_changed > threshold:
+            print('breaking')
+            break
+        diff = now - sub.last_changed
+        mins = diff.total_seconds() // 60
+        #print(mins)
+        if mins <= 10:
+            rank = 0
+        else:
+            rank = log2(mins // 10)
+        #print(2 ** rank)
+        if sub.last_checked < (now - timedelta(minutes=(2 ** rank))):
+            yield sub.name
+
 
 # Priority Algorithm
 # Broken into n bins size 2^(i + 8) starting at i = 0
@@ -89,6 +112,10 @@ def query_sub(r, sub):
 
 if __name__ == '__main__':
     while True:
+        for sub in get_subs_by_last_changed():
+            print("Updating " + sub)
+            query_sub(reddit, sub)
+
         for sub in get_subs():
             print("Updating " + sub)
             query_sub(reddit, sub)
