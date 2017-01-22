@@ -24,12 +24,12 @@ r = Random()
 
 
 def get_subs_by_last_changed():
-    subs = Subreddit.objects.order_by('last_changed')
-    threshold =  datetime.now() + timedelta(days=7)
+    subs = Subreddit.objects.order_by('-last_changed')
+    threshold =  datetime.now() - timedelta(days=7)
     now = datetime.now()
     for sub in subs:
-        #print(sub.last_changed)
-        if sub.last_changed > threshold:
+        print(sub.last_changed)
+        if sub.last_changed < threshold:
             print('breaking')
             break
         diff = now - sub.last_changed
