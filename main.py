@@ -124,7 +124,7 @@ def simple_method(reddit):
             query_sub(reddit, sub)
 
     def random_action_impl():
-        print("Querying random")
+        print("Querying 2 random subs")
         for _ in range(2):
             b = False
             if r.random() <= 0.05:
