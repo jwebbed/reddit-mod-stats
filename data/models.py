@@ -1,4 +1,5 @@
 import sys
+from datetime import datetime
 
 try:
     from django.db import models
@@ -24,3 +25,7 @@ class SubredditQuery(models.Model):
     sub = models.ForeignKey(Subreddit)
     mods = models.ManyToManyField(User)
     time = models.DateTimeField(auto_now_add=True)
+
+class LastChecked(models.Model):
+    name = models.CharField(max_length=16, primary_key=True)
+    last_checked = models.DateTimeField(default=datetime(1970, 1, 1))

@@ -110,10 +110,10 @@ def query_sub(r, sub):
 def simple_method(reddit):
     r = Random()
 
-    rall_last_checked = datetime(1970, 1, 1)
+    rall_last_checked_entry = LastChecked.objects.get_or_create(name='rall')[0]
     rall_time_delta = timedelta(hours=4)
 
-    random_last_checked = datetime(1970, 1, 1)
+    random_last_checked_entry = LastChecked.objects.get_or_create(name='random')[0]
     random_time_delta = timedelta(seconds=30)
 
     while True:
@@ -129,14 +129,15 @@ def simple_method(reddit):
             print("Updating " + sub)
             query_sub(reddit, sub)
 
-        if rall_last_checked < now - rall_time_delta:
+        if rall_last_checked_entry.last_checked < now - rall_time_delta:
             print("Querying top 100 r/all subs")
             for sub in get_rall_subs(reddit):
                 print("Querying " + sub)
                 query_sub(reddit, sub)
-            rall_last_checked = now
+            rall_last_checked_entry.last_checked = now
+            rall_last_checked_entry.save()
 
-        if random_last_checked < now - random_time_delta:
+        if random_last_checked_entry.last_checked < now - random_time_delta:
             print("Querying random")
             for _ in range(10):
                 b = False
@@ -145,7 +146,8 @@ def simple_method(reddit):
                 sub = reddit.random_subreddit(nsfw=b)
                 print("Querying " + sub.display_name)
                 query_sub(reddit, sub.display_name)
-            random_last_checked = now
+            random_last_checked_entry.last_checked = now
+            random_last_checked_entry.save()
 
 if __name__ == '__main__':
     reddit = praw.Reddit(client_id='ufxVBVi9_Z03Gg',
