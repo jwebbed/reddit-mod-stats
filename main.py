@@ -16,6 +16,7 @@ from math import log2
 import re
 
 import praw
+import prawcore
 
 # If a sub has been changed in the last week, there seems a higher probability
 # if will be changed more soon. The closer it has been since it last has been changed
@@ -68,7 +69,12 @@ def get_subs():
 
 def query_sub(r, sub):
     sub_obj = reddit.subreddit(sub)
-    sub_model = Subreddit.objects.get_or_create(name=sub, defaults = {'subscribers' : sub_obj.subscribers})
+    try:
+        sub_model = Subreddit.objects.get_or_create(name=sub, defaults = {'subscribers' : sub_obj.subscribers})
+    except prawcore.exceptions.PrawcoreException as e:
+        print(e)
+        return
+
     query = SubredditQuery.objects.create(sub=sub_model[0])
     query.save()
 
@@ -109,7 +115,8 @@ def simple_method(reddit):
     def action(name, delta, action):
         action_entry = LastChecked.objects.get_or_create(name=name)[0]
         def perform():
-            if action_entry.last_checked < datetime.now() - delta:
+            now = datetime.now()
+            if action_entry.last_checked < now - delta:
                 action()
                 action_entry.last_checked = now
                 action_entry.save()
@@ -139,18 +146,31 @@ def simple_method(reddit):
             print("Querying " + name)
             query_sub(reddit, name)
 
+    def sub_action_impl(s):
+        def f():
+            for post in reddit.subreddit(s).new(limit=25):
+                match = re.search('/r/[A-Za-z]+', str(post.url))
+                if match:
+                    name = match.group(0)[3:]
+                    print("Querying " + name)
+                    query_sub(reddit, name)
+        return f
+
 
     r = Random()
     rall_action = action('rall', timedelta(hours=1), rall_action_impl)
     random_action = action('random', timedelta(seconds=3), random_action_impl)
     trending_action = action('trending', timedelta(hours=24), trending_action_impl)
+    newreddits_action = action('newreddits', timedelta(hours=6), sub_action_impl('newreddits'))
+    redditrequest_action = action('redditrequest', timedelta(hours=6), sub_action_impl('redditrequest'))
+    #adoptareddit_action = action('adoptareddit', timedelta(hours=6), sub_action_impl('adoptareddit'))
+    NOTSONEWREDDITS_action = action('NOTSONEWREDDITS', timedelta(hours=6), sub_action_impl('NOTSONEWREDDITS'))
+    obscuresubreddits_action = action('obscuresubreddits', timedelta(hours=6), sub_action_impl('obscuresubreddits'))
+    newreddits_nsfw_action = action('newreddits_nsfw', timedelta(hours=6), sub_action_impl('newreddits_nsfw'))
 
     while True:
-        now = datetime.now()
-
-        print("Checking and updating recently changed")
         for sub in get_subs_by_last_changed():
-            print("Updating " + sub)
+            print("Updating " + sub + " for recently changed")
             query_sub(reddit, sub)
 
         print("Checking and updating with frequency on size")
@@ -161,9 +181,15 @@ def simple_method(reddit):
         rall_action()
         random_action()
         trending_action()
+        newreddits_action()
+        redditrequest_action()
+        #adoptareddit_action()
+        NOTSONEWREDDITS_action()
+        obscuresubreddits_action()
+        newreddits_nsfw_action()
 
 if __name__ == '__main__':
     reddit = praw.Reddit(client_id='ufxVBVi9_Z03Gg',
                          client_secret='_zyrtt2C1oF2020U3dIBVHMb7V0',
-                         user_agent='unix:modt:v0.4 (by /u/ssjjawa)')
+                         user_agent='unix:modt:v0.5 (by /u/ssjjawa)')
     simple_method(reddit)
