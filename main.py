@@ -125,7 +125,7 @@ def simple_method(reddit):
 
     def random_action_impl():
         print("Querying random")
-        for _ in range(10):
+        for _ in range(5):
             b = False
             if r.random() <= 0.05:
                 b = True
@@ -135,7 +135,7 @@ def simple_method(reddit):
 
     r = Random()
     rall_action = action('rall', timedelta(hours=1), rall_action_impl)
-    random_action = action('random', timedelta(seconds=15), random_action_impl)
+    random_action = action('random', timedelta(seconds=10), random_action_impl)
 
     while True:
         now = datetime.now()
