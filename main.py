@@ -13,11 +13,9 @@ from data.models import *
 
 from random import Random
 from math import log2
+import re
 
 import praw
-
-def get_rall_subs(r):
-    return [post.subreddit.display_name for post in r.subreddit('all').hot(limit=100)]
 
 # If a sub has been changed in the last week, there seems a higher probability
 # if will be changed more soon. The closer it has been since it last has been changed
@@ -119,7 +117,7 @@ def simple_method(reddit):
 
     def rall_action_impl():
         print("Querying top 100 r/all subs")
-        for sub in get_rall_subs(reddit):
+        for sub in [post.subreddit.display_name for post in reddit.subreddit('all').hot(limit=100)]:
             print("Querying " + sub)
             query_sub(reddit, sub)
 
@@ -133,9 +131,19 @@ def simple_method(reddit):
             print("Querying " + sub.display_name)
             query_sub(reddit, sub.display_name)
 
+    def trending_action_impl():
+        print("Querying daily trending")
+        post = list(reddit.subreddit('trendingsubreddits').new(limit=1))[0]
+        for sub in set(re.findall('/r/[A-Za-z]+', str(post.selftext))):
+            name = sub[3:]
+            print("Querying " + name)
+            query_sub(reddit, name)
+
+
     r = Random()
     rall_action = action('rall', timedelta(hours=1), rall_action_impl)
     random_action = action('random', timedelta(seconds=3), random_action_impl)
+    trending_action = action('trending', timedelta(hours=24), trending_action_impl)
 
     while True:
         now = datetime.now()
@@ -152,9 +160,10 @@ def simple_method(reddit):
 
         rall_action()
         random_action()
+        trending_action()
 
 if __name__ == '__main__':
     reddit = praw.Reddit(client_id='ufxVBVi9_Z03Gg',
                          client_secret='_zyrtt2C1oF2020U3dIBVHMb7V0',
-                         user_agent='unix:modt:v0.1 (by /u/ssjjawa)')
+                         user_agent='unix:modt:v0.4 (by /u/ssjjawa)')
     simple_method(reddit)
