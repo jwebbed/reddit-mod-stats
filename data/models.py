@@ -16,6 +16,7 @@ class Subreddit(models.Model):
     subscribers = models.IntegerField()
     last_checked = models.DateTimeField(auto_now_add=True)
     last_changed = models.DateTimeField(auto_now_add=True)
+    forbidden = models.BooleanField(default=False)
 
     def latest_mods(self):
         query = self.subredditquery_set.filter(time__isnull=False).latest('time').mods.all()

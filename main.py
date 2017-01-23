@@ -47,7 +47,7 @@ def get_subs_by_last_changed():
 # The frequency at which a sub should be checked is 2^(i - 2) hours
 
 def get_subs():
-    subs = Subreddit.objects.order_by('-subscribers')
+    subs = Subreddit.objects.filter(forbidden=False).order_by('-subscribers')
     remaining = subs.count()
     start = 0
     i = 0
@@ -73,6 +73,8 @@ def query_sub(r, sub):
         sub_model = Subreddit.objects.get_or_create(name=sub, name_lower=sub.lower(), defaults = {'subscribers' : sub_obj.subscribers})
     except prawcore.exceptions.PrawcoreException as e:
         print(e)
+        sub_obj.forbidden = True
+        sub_obj.save()
         return
 
     query = SubredditQuery.objects.create(sub=sub_model[0])
