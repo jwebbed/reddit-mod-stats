@@ -120,7 +120,7 @@ def simple_method(reddit):
             now = datetime.now()
             if action_entry.last_checked < now - delta:
                 if strict:
-                    iters = (action_entry.last_checked - now) // delta
+                    iters = (action_entry.last_checked - now).total_seconds() // delta.total_seconds()
                     print("Strict mode on, performing action " + name + " " + str(iters) + "times")
                     for _ in range(iters):
                         action()
