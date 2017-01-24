@@ -114,12 +114,18 @@ def query_sub(r, sub):
     query.save()
 
 def simple_method(reddit):
-    def action(name, delta, action):
+    def action(name, delta, action, strict=False):
         action_entry = LastChecked.objects.get_or_create(name=name)[0]
         def perform():
             now = datetime.now()
             if action_entry.last_checked < now - delta:
-                action()
+                if strict:
+                    iters = (action_entry.last_checked - now) // delta
+                    print("Strict mode on, performing action " + action + " " + str(iters) + "times")
+                    for _ in range(iters):
+                        action()
+                else:
+                    action()
                 action_entry.last_checked = now
                 action_entry.save()
         return perform
@@ -161,7 +167,7 @@ def simple_method(reddit):
 
     r = Random()
     rall_action = action('rall', timedelta(hours=1), rall_action_impl)
-    random_action = action('random', timedelta(seconds=3), random_action_impl)
+    random_action = action('random', timedelta(seconds=3), random_action_impl, True)
     trending_action = action('trending', timedelta(hours=24), trending_action_impl)
     newreddits_action = action('newreddits', timedelta(hours=6), sub_action_impl('newreddits'))
     redditrequest_action = action('redditrequest', timedelta(hours=6), sub_action_impl('redditrequest'))
