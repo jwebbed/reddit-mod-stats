@@ -193,5 +193,5 @@ def simple_method(reddit):
 if __name__ == '__main__':
     reddit = praw.Reddit(client_id='ufxVBVi9_Z03Gg',
                          client_secret='_zyrtt2C1oF2020U3dIBVHMb7V0',
-                         user_agent='unix:modt:v0.5 (by /u/ssjjawa)')
+                         user_agent='unix:modt:v0.6 (by /u/ssjjawa)')
     simple_method(reddit)
