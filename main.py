@@ -121,7 +121,7 @@ def simple_method(reddit):
             if action_entry.last_checked < now - delta:
                 if strict:
                     iters = (now - action_entry.last_checked) // delta
-                    print("Strict mode on, performing action " + name + " " + str(iters) + "times")
+                    print("Strict mode on, performing action " + name + " " + str(iters) + " times")
                     for _ in range(iters):
                         action()
                 else:
