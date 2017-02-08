@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 # Django specific settings
 import os
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
