@@ -79,16 +79,17 @@ def query_sub(r, sub):
         #sub_obj.save()
         return
 
-    query = SubredditQuery.objects.create(sub=sub_model[0])
-    query.save()
-
     if (sub_model[1] == True):
         print("Added new sub " + sub)
         curr_mods = []
     else:
         curr_mods = sub_model[0].latest_mods()
+        #print(curr_mods)
         sub_model[0].last_checked = datetime.now()
         sub_model[0].save()
+
+    query = SubredditQuery.objects.create(sub=sub_model[0])
+    query.save()
 
     mods = []
     change = False
@@ -203,4 +204,11 @@ if __name__ == '__main__':
     reddit = praw.Reddit(client_id='ufxVBVi9_Z03Gg',
                          client_secret='_zyrtt2C1oF2020U3dIBVHMb7V0',
                          user_agent='unix:modt:v0.6 (by /u/ssjjawa)')
-    simple_method(reddit)
+
+    tolerance = 1
+    while tolerance > 0:
+        try:
+            simple_method(reddit)
+        except:
+            tolerance -= 1
+            continue

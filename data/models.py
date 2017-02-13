@@ -19,9 +19,8 @@ class Subreddit(models.Model):
     forbidden = models.BooleanField(default=False)
 
     def latest_mods(self):
-        query = self.subredditquery_set.filter(time__isnull=False).latest('time').mods.all()
-        print(len(query))
-        return [m for m in query]
+        query = self.subredditquery_set.latest('time')
+        return [m for m in query.mods.all()]
 
 class SubredditQuery(models.Model):
     sub = models.ForeignKey(Subreddit)
