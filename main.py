@@ -197,7 +197,7 @@ def simple_method(reddit):
     trending_action = action('trending', timedelta(hours=24), trending_action_impl)
     newreddits_action = action('newreddits', timedelta(hours=6), sub_action_impl('newreddits'))
     redditrequest_action = action('redditrequest', timedelta(hours=6), sub_action_impl('redditrequest'))
-    #adoptareddit_action = action('adoptareddit', timedelta(hours=6), sub_action_impl('adoptareddit'))
+    adoptareddit_action = action('adoptareddit', timedelta(hours=6), sub_action_impl('adoptareddit'))
     NOTSONEWREDDITS_action = action('NOTSONEWREDDITS', timedelta(hours=6), sub_action_impl('NOTSONEWREDDITS'))
     obscuresubreddits_action = action('obscuresubreddits', timedelta(hours=6), sub_action_impl('obscuresubreddits'))
     newreddits_nsfw_action = action('newreddits_nsfw', timedelta(hours=6), sub_action_impl('newreddits_nsfw'))
