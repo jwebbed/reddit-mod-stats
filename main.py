@@ -22,7 +22,7 @@ import prawcore
 
 # If a sub has been changed in the last week, there seems a higher probability
 # if will be changed more soon. The closer it has been since it last has been changed
-# the higher the frequency we check it starting at 30s and 10s and increasing
+# the higher the frequency we check it starting at 1m and 10s and increasing
 # exponetially
 
 def get_subs_by_last_changed():
@@ -33,7 +33,7 @@ def get_subs_by_last_changed():
         if sub.last_changed < threshold:
             break
         diff = now - sub.last_changed
-        mins = diff.total_seconds() // 30
+        mins = diff.total_seconds() // 60
         if mins <= 1:
             rank = 0
         else:
