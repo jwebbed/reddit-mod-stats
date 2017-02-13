@@ -112,6 +112,7 @@ def query_sub(r, sub):
                     curr_mods.remove(c)
                     break
             new_mods.append(mod_model[0])
+            change = True
 
     if new == False and (change == True or len(curr_mods) != 0):
         print('Mods of ' + sub + ' have changed')
