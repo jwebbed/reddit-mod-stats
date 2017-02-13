@@ -113,7 +113,7 @@ def query_sub(r, sub):
                     curr_mods.remove(c)
                     removed = True
                     break
-            if removed = False:
+            if removed == False:
                 new_mods.append(mod_model[0])
                 change = True
 
