@@ -71,11 +71,13 @@ def get_subs():
 
 def query_sub(r, sub):
     sub_obj = reddit.subreddit(sub)
+    sub_model = Subreddit.objects.get_or_create(name_lower=sub.lower(), defaults={'name' : sub, 'forbidden' : False})
     try:
-        sub_model = Subreddit.objects.get_or_create(name_lower=sub.lower(), defaults = {'subscribers' : sub_obj.subscribers , 'name' : sub, 'forbidden' : False })
+        sub_model[0].subscribers = sub_obj.subscribers
+        sub_model[0].save()
     except prawcore.exceptions.PrawcoreException as e:
         print(e)
-        sub_model = Subreddit.objects.get_or_create(name_lower=sub.lower(), defaults = { 'forbidden' : True })
+        sub_model[0].forbidden = True
         sub_model[0].save()
         return
 
