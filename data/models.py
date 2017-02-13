@@ -10,6 +10,9 @@ except  Exception:
 class User(models.Model):
     username = models.CharField(max_length=20, primary_key=True)
 
+    def __str__(self):
+        return self.username
+
 class Subreddit(models.Model):
     name_lower = models.CharField(max_length=22, primary_key=True)
     name = models.CharField(max_length=22, unique=True)

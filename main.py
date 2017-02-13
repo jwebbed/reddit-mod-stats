@@ -82,11 +82,12 @@ def query_sub(r, sub):
     if (sub_model[1] == True):
         print("Added new sub " + sub)
         curr_mods = []
+        new = True
     else:
         curr_mods = sub_model[0].latest_mods()
-        #print(curr_mods)
         sub_model[0].last_checked = datetime.now()
         sub_model[0].save()
+        new = False
 
     query = SubredditQuery.objects.create(sub=sub_model[0])
     query.save()
@@ -99,17 +100,18 @@ def query_sub(r, sub):
         mod_model = User.objects.get_or_create(username=mod.name)
         mods.append(mod_model[0])
 
-        if change == False:
+        if new == False and change == False:
             if mod_model[1] == True:
                 change = True
                 continue
 
             for c in curr_mods:
-                if c == mod_model[0]:
+                if c.username == mod_model[0].username:
                     curr_mods.remove(c)
 
-    if change == True and len(curr_mods) != 0:
+    if new == False and (change == True or len(curr_mods) != 0):
         print("Mods of " + sub + " have changed")
+        print(curr_mods)
         sub_model[0].last_changed = datetime.now()
         sub_model[0].save()
 
@@ -205,10 +207,4 @@ if __name__ == '__main__':
                          client_secret='_zyrtt2C1oF2020U3dIBVHMb7V0',
                          user_agent='unix:modt:v0.6 (by /u/ssjjawa)')
 
-    tolerance = 1
-    while tolerance > 0:
-        try:
-            simple_method(reddit)
-        except:
-            tolerance -= 1
-            continue
+    simple_method(reddit)
