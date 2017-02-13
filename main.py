@@ -76,6 +76,7 @@ def query_sub(r, sub):
     except prawcore.exceptions.PrawcoreException as e:
         print(e)
         sub_model = Subreddit.objects.get_or_create(name_lower=sub.lower(), defaults = { 'forbidden' : True })
+        sub_model[0].save()
         return
 
     if (sub_model[1] == True):
