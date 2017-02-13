@@ -70,9 +70,10 @@ def get_subs():
 
 def query_sub(r, sub):
     sub_obj = reddit.subreddit(sub)
-    sub_model = Subreddit.objects.get_or_create(name_lower=sub.lower(), defaults={'name' : sub, 'forbidden' : False})
+    sub_model = Subreddit.objects.get_or_create(name_lower=sub.lower(), defaults={'forbidden' : False})
     try:
         sub_model[0].subscribers = sub_obj.subscribers
+        sub_model[0].name =sub_obj.name
         sub_model[0].save()
     except prawcore.exceptions.PrawcoreException as e:
         print(e)
@@ -94,11 +95,15 @@ def query_sub(r, sub):
     query.save()
 
     mods = []
+    new_mods = []
     change = False
     for mod in sub_obj.moderator:
         if mod.name == 'AutoModerator':
             continue
         mod_model = User.objects.get_or_create(username=mod.name)
+
+        if mod_model[1] == True:
+            new_mods.append(mod_model[0])
         mods.append(mod_model[0])
 
         if new == False and change == False:
@@ -111,8 +116,9 @@ def query_sub(r, sub):
                     curr_mods.remove(c)
 
     if new == False and (change == True or len(curr_mods) != 0):
-        print("Mods of " + sub + " have changed")
-        print(curr_mods)
+        print('Mods of ' + sub + ' have changed')
+        print('Removed: ' + str(curr_mods))
+        print('Added: ' + str(new_mods))
         sub_model[0].last_changed = datetime.now()
         sub_model[0].save()
 
