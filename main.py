@@ -107,12 +107,15 @@ def query_sub(r, sub):
             if mod_model[1] == True:
                 change = True
 
+            removed = False
             for c in curr_mods:
                 if c.username == mod_model[0].username:
                     curr_mods.remove(c)
+                    removed = True
                     break
-            new_mods.append(mod_model[0])
-            change = True
+            if removed = False:
+                new_mods.append(mod_model[0])
+                change = True
 
     if new == False and (change == True or len(curr_mods) != 0):
         print('Mods of ' + sub + ' have changed')
