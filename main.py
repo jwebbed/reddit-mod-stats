@@ -175,12 +175,15 @@ def simple_method(reddit):
 
     def sub_action_impl(s):
         def f():
+            subs = set()
             for post in reddit.subreddit(s).new(limit=25):
                 match = re.search('/r/[A-Za-z]+', str(post.url))
                 if match:
                     name = match.group(0)[3:]
-                    print("Querying " + name)
-                    query_sub(reddit, name)
+                    subs.add(name)
+            for sub in subs:
+                print("Querying " + sub)
+                query_sub(reddit, sub)
         return f
 
 
