@@ -4,3 +4,4 @@
 *.pyc
 settings.py
 mods
+sqlite.db
