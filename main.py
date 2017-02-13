@@ -31,7 +31,6 @@ def get_subs_by_last_changed():
     now = datetime.now()
     for sub in subs:
         if sub.last_changed < threshold:
-            print('breaking')
             break
         diff = now - sub.last_changed
         mins = diff.total_seconds() // 60
