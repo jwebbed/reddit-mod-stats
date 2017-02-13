@@ -103,14 +103,11 @@ def query_sub(r, sub):
         mod_model = User.objects.get_or_create(username=mod.name)
 
         if mod_model[1] == True:
+            change = True
             new_mods.append(mod_model[0])
         mods.append(mod_model[0])
 
         if new == False:
-            if mod_model[1] == True:
-                change = True
-                continue
-
             for c in curr_mods:
                 if c.username == mod_model[0].username:
                     curr_mods.remove(c)
