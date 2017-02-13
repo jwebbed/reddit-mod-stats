@@ -181,6 +181,10 @@ def simple_method(reddit):
                 if match:
                     name = match.group(0)[3:]
                     subs.add(name)
+                if 'selftext' in dir(post) or 'selftext' in vars(post):
+                    for m in re.findall('/r/[A-Za-z]+', str(post.selftext)):
+                        name = m.group(0)[3:]
+                        subs.add(name)
             for sub in subs:
                 print("Querying " + sub)
                 query_sub(reddit, sub)
