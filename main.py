@@ -39,7 +39,7 @@ def get_subs_by_last_changed():
         else:
             rank = log2(mins)
         if sub.last_checked < (now - timedelta(seconds=((2 ** rank) * 5))):
-            yield sub.name
+            yield sub.name_lower
 
 
 # Priority Algorithm
@@ -58,7 +58,7 @@ def get_subs():
         #print(end)
         for sub in subs[start:end]:
             if sub.last_checked < t:
-                yield sub.name
+                yield sub.name_lower
 
         if end == remaining:
             break
@@ -73,7 +73,7 @@ def query_sub(r, sub):
     sub_model = Subreddit.objects.get_or_create(name_lower=sub.lower(), defaults={'forbidden' : False})
     try:
         sub_model[0].subscribers = sub_obj.subscribers
-        sub_model[0].name =sub_obj.name
+        sub_model[0].name = sub_obj.name
         sub_model[0].save()
     except prawcore.exceptions.PrawcoreException as e:
         print(e)
