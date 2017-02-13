@@ -73,7 +73,7 @@ def query_sub(r, sub):
     sub_model = Subreddit.objects.get_or_create(name_lower=sub.lower(), defaults={'forbidden' : False})
     try:
         sub_model[0].subscribers = sub_obj.subscribers
-        sub_model[0].name = sub_obj.name
+        sub_model[0].name = sub_obj.display_name
         sub_model[0].save()
     except prawcore.exceptions.PrawcoreException as e:
         print(e)
