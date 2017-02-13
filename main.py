@@ -56,7 +56,7 @@ def get_subs():
     while True:
         t = datetime.now() - timedelta(minutes=(2**(i - 2)) * 60)
         end = min(2 ** (i + 8), remaining)
-        print(end)
+        #print(end)
         for sub in subs[start:end]:
             if sub.last_checked < t:
                 yield sub.name
@@ -193,9 +193,8 @@ def simple_method(reddit):
             print("Updating " + sub + " for recently changed")
             query_sub(reddit, sub)
 
-        print("Checking and updating with frequency on size")
         for sub in get_subs():
-            print("Updating " + sub)
+            print("Updating " + sub + " for size")
             query_sub(reddit, sub)
 
         rall_action()
