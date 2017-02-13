@@ -120,12 +120,17 @@ def query_sub(r, sub):
 
 def simple_method(reddit):
     def action(name, delta, action, strict=False):
+        created = datetime.now()
         action_entry = LastChecked.objects.get_or_create(name=name)[0]
         def perform():
             now = datetime.now()
             if action_entry.last_checked < now - delta:
                 if strict:
-                    iters = (now - action_entry.last_checked) // delta
+                    if action_entry.last_checked < created:
+                        iters = (now - created) // delta
+                    else:
+                        iters = (now - action_entry.last_checked) // delta
+
                     print("Strict mode on, performing action " + name + " " + str(iters) + " times")
                     for _ in range(iters):
                         action()
