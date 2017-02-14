@@ -137,9 +137,10 @@ def simple_method(reddit):
                 if strict:
 
                     if action_entry.last_checked < created:
-                        iters = (now - created) ** 0.95 // delta
+                        iters = (now - created) // delta
                     else:
-                        iters = (now - action_entry.last_checked) ** 0.95 // delta
+                        iters = (now - action_entry.last_checked) // delta
+                    iters = iters ** 0.95
                     iters = max(iters, 1)
 
                     print("Strict mode on, performing action " + name + " " + str(iters) + " times")
