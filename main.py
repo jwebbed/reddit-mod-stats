@@ -185,13 +185,11 @@ def simple_method(reddit):
             query_sub(reddit, sub.name_lower)
 
     def subs_by_size_action_impl():
-        print("Updating subs for size")
         for sub in get_subs_by_size():
             print("Updating " + sub + " for size")
             query_sub(reddit, sub)
 
     def subs_by_last_changed_action_impl():
-        print("Updating subs for recently changed")
         for sub in get_subs_by_last_changed():
             print("Updating " + sub + " for recently changed")
             query_sub(reddit, sub)
