@@ -129,7 +129,7 @@ def query_sub(r, sub):
 
 def simple_method(reddit):
     def action(name, delta, action, strict=False):
-        created = datetime.now()
+        created = LastChecked.objects.get(name='last_started').last_checked
         action_entry = LastChecked.objects.get_or_create(name=name)[0]
         def perform():
             now = datetime.now()
