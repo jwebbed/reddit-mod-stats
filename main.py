@@ -169,7 +169,7 @@ def simple_method(reddit):
             if r.random() <= 0.05:
                 b = True
             sub = reddit.random_subreddit(nsfw=b)
-            print("Querying " + sub.display_name)
+            print("Querying " + sub.display_name + " randomly")
             query_sub(reddit, sub.display_name)
 
     def trending_action_impl():
@@ -183,7 +183,7 @@ def simple_method(reddit):
     def least_freq_action_impl():
         print("Querying longest unchecked subs")
         for sub in Subreddit.objects.filter(forbidden=False).order_by('last_checked')[:2]:
-            print("Querying " + sub.name_lower)
+            print("Querying " + sub.name_lower + " for least recently checked")
             query_sub(reddit, sub.name_lower)
 
     def subs_by_size_action_impl():
