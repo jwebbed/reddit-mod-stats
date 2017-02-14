@@ -26,7 +26,7 @@ import prawcore
 # exponetially
 
 def get_subs_by_last_changed():
-    subs = Subreddit.objects.order_by('-last_changed')
+    subs = Subreddit.objects.filter(forbidden=False).order_by('-last_changed')
     threshold =  datetime.now() - timedelta(days=7)
     now = datetime.now()
     for sub in subs:
