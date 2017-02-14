@@ -217,7 +217,7 @@ def simple_method(reddit):
         trending_action()
         newreddits_action()
         redditrequest_action()
-        #adoptareddit_action()
+        adoptareddit_action()
         NOTSONEWREDDITS_action()
         obscuresubreddits_action()
         newreddits_nsfw_action()
