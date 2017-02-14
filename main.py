@@ -135,7 +135,7 @@ def simple_method(reddit):
             now = datetime.now()
             if action_entry.last_checked < now - delta:
                 if strict:
-                    
+
                     if action_entry.last_checked < created:
                         iters = (now - created) // delta
                     else:
@@ -185,8 +185,7 @@ def simple_method(reddit):
                     subs.add(name)
                 if 'selftext' in dir(post) or 'selftext' in vars(post):
                     for m in re.findall('/r/[A-Za-z]+', str(post.selftext)):
-                        name = m.group(0)[3:]
-                        subs.add(name)
+                        subs.add(m[3:])
             for sub in subs:
                 print("Querying " + sub)
                 query_sub(reddit, sub)
