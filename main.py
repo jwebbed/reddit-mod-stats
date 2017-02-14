@@ -152,7 +152,7 @@ def simple_method(reddit):
                         action()
                 else:
                     action()
-                action_entry.last_checked = now
+                action_entry.last_checked = datetime.now()
                 action_entry.save()
         return perform
 
