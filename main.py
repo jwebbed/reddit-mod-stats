@@ -141,7 +141,7 @@ def simple_method(reddit):
                     else:
                         iters = (now - action_entry.last_checked) // delta
                     iters = iters ** 0.95
-                    iters = max(iters, 1)
+                    iters = max(int(iters), 1)
 
                     print("Strict mode on, performing action " + name + " " + str(iters) + " times")
                     for _ in range(iters):
