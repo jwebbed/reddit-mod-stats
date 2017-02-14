@@ -128,6 +128,7 @@ def query_sub(r, sub):
     query.save()
 
 def simple_method(reddit):
+    r = Random()
     def action(name, delta, action, strict=False):
         if delta:
             created = LastChecked.objects.get(name='last_started').last_checked
@@ -210,7 +211,6 @@ def simple_method(reddit):
                 query_sub(reddit, sub)
         return f
 
-    r = Random()
     actions = (
         action('changed', False, subs_by_last_changed_action_impl),
         action('size', False, subs_by_size_action_impl),
