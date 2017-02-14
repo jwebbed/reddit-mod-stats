@@ -177,7 +177,7 @@ def simple_method(reddit):
 
     def least_freq_action_impl():
         print("Querying longest unchecked subs")
-        for sub in Subreddit.objects.filter(forbidden=False).order_by('last_changed')[:5]:
+        for sub in Subreddit.objects.filter(forbidden=False).order_by('last_checked')[:5]:
             print("Querying " + sub.name_lower)
             query_sub(reddit, sub.name_lower)
 
