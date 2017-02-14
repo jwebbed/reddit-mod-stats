@@ -176,7 +176,7 @@ def simple_method(reddit):
             query_sub(reddit, name)
 
     def least_freq_action_impl():
-        for sub in Subreddit.objects.filter(forbidden=False).order_by('last_changed')[:10]:
+        for sub in Subreddit.objects.filter(forbidden=False).order_by('last_changed')[:5]:
             yield sub.name_lower
 
     def sub_action_impl(s):
@@ -200,7 +200,7 @@ def simple_method(reddit):
     r = Random()
     rall_action = action('rall', timedelta(hours=1), rall_action_impl)
     random_action = action('random', timedelta(seconds=3), random_action_impl, True)
-    least_freq_action = action('least_freq', timedelta(second=10), least_freq_action_impl)
+    least_freq_action = action('least_freq', timedelta(seconds=10), least_freq_action_impl, True)
     trending_action = action('trending', timedelta(hours=24), trending_action_impl)
     newreddits_action = action('newreddits', timedelta(hours=6), sub_action_impl('newreddits'))
     redditrequest_action = action('redditrequest', timedelta(hours=6), sub_action_impl('redditrequest'))
