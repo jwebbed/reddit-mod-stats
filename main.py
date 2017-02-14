@@ -146,7 +146,8 @@ def simple_method(reddit):
                     iters = iters ** 0.95
                     iters = max(int(iters), 1)
 
-                    print("Strict mode on, performing action " + name + " " + str(iters) + " times")
+                    if iters > 1
+                        print("Strict mode on, performing action " + name + " " + str(iters) + " times")
                     for _ in range(iters):
                         action()
                 else:
