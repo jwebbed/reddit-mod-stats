@@ -47,7 +47,7 @@ def get_subs_by_last_changed():
 # Bins are for the largest subs
 # The frequency at which a sub should be checked is 2^(i - 2) hours
 
-def get_subs():
+def get_subs_by_size():
     subs = Subreddit.objects.filter(forbidden=False).order_by('-subscribers')
     remaining = subs.count()
     start = 0
@@ -129,13 +129,15 @@ def query_sub(r, sub):
 
 def simple_method(reddit):
     def action(name, delta, action, strict=False):
-        created = LastChecked.objects.get(name='last_started').last_checked
-        action_entry = LastChecked.objects.get_or_create(name=name)[0]
+        if delta:
+            created = LastChecked.objects.get(name='last_started').last_checked
+            action_entry = LastChecked.objects.get_or_create(name=name)[0]
         def perform():
             now = datetime.now()
-            if action_entry.last_checked < now - delta:
+            if delta == False:
+                action()
+            elif action_entry.last_checked < now - delta:
                 if strict:
-
                     if action_entry.last_checked < created:
                         iters = (now - created) // delta
                     else:
@@ -178,9 +180,21 @@ def simple_method(reddit):
 
     def least_freq_action_impl():
         print("Querying longest unchecked subs")
-        for sub in Subreddit.objects.filter(forbidden=False).order_by('last_checked')[:5]:
+        for sub in Subreddit.objects.filter(forbidden=False).order_by('last_checked')[:2]:
             print("Querying " + sub.name_lower)
             query_sub(reddit, sub.name_lower)
+
+    def subs_by_size_action_impl():
+        print("Updating subs for size")
+        for sub in get_subs_by_size():
+            print("Updating " + sub + " for size")
+            query_sub(reddit, sub)
+
+    def subs_by_last_changed_action_impl():
+        print("Updating subs for recently changed")
+        for sub in get_subs_by_last_changed():
+            print("Updating " + sub + " for recently changed")
+            query_sub(reddit, sub)
 
     def sub_action_impl(s):
         def f():
@@ -198,39 +212,26 @@ def simple_method(reddit):
                 query_sub(reddit, sub)
         return f
 
-
-
     r = Random()
-    rall_action = action('rall', timedelta(hours=1), rall_action_impl)
-    random_action = action('random', timedelta(seconds=3), random_action_impl, True)
-    least_freq_action = action('least_freq', timedelta(seconds=3), least_freq_action_impl, True)
-    trending_action = action('trending', timedelta(hours=24), trending_action_impl)
-    newreddits_action = action('newreddits', timedelta(hours=6), sub_action_impl('newreddits'))
-    redditrequest_action = action('redditrequest', timedelta(hours=6), sub_action_impl('redditrequest'))
-    adoptareddit_action = action('adoptareddit', timedelta(hours=6), sub_action_impl('adoptareddit'))
-    NOTSONEWREDDITS_action = action('NOTSONEWREDDITS', timedelta(hours=6), sub_action_impl('NOTSONEWREDDITS'))
-    obscuresubreddits_action = action('obscuresubreddits', timedelta(hours=6), sub_action_impl('obscuresubreddits'))
-    newreddits_nsfw_action = action('newreddits_nsfw', timedelta(hours=6), sub_action_impl('newreddits_nsfw'))
+    actions = (
+        action('changed', False, subs_by_last_changed_action_impl),
+        action('size', False, subs_by_size_action_impl),
+        action('rall', timedelta(hours=1), rall_action_impl),
+        action('random', timedelta(seconds=5), random_action_impl, True),
+        action('least_freq', timedelta(seconds=5), least_freq_action_impl, True),
+        action('trending', timedelta(hours=24), trending_action_impl),
+        action('newreddits', timedelta(hours=6), sub_action_impl('newreddits')),
+        action('redditrequest', timedelta(hours=6), sub_action_impl('redditrequest')),
+        action('adoptareddit', timedelta(hours=6), sub_action_impl('adoptareddit')),
+        action('NOTSONEWREDDITS', timedelta(hours=6), sub_action_impl('NOTSONEWREDDITS')),
+        action('obscuresubreddits', timedelta(hours=6), sub_action_impl('obscuresubreddits')),
+        action('newreddits_nsfw', timedelta(hours=6), sub_action_impl('newreddits_nsfw')),
+    )
+
 
     while True:
-        for sub in get_subs_by_last_changed():
-            print("Updating " + sub + " for recently changed")
-            query_sub(reddit, sub)
-
-        for sub in get_subs():
-            print("Updating " + sub + " for size")
-            query_sub(reddit, sub)
-
-        rall_action()
-        random_action()
-        least_freq_action()
-        trending_action()
-        newreddits_action()
-        redditrequest_action()
-        adoptareddit_action()
-        NOTSONEWREDDITS_action()
-        obscuresubreddits_action()
-        newreddits_nsfw_action()
+        for action in actions:
+            action()
 
 if __name__ == '__main__':
     LastChecked.objects.get_or_create(name='last_started', defaults={ 'last_checked' : datetime.now() })
