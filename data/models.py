@@ -24,9 +24,9 @@ class User(models.Model):
 class Subreddit(models.Model):
     name_lower = models.CharField(max_length=22, primary_key=True)
     name = models.CharField(max_length=22)
-    subscribers = models.IntegerField(default=0)
+    subscribers = models.IntegerField(default=0, db_index=True)
     last_checked = models.DateTimeField(auto_now_add=True)
-    last_changed = models.DateTimeField(auto_now_add=True)
+    last_changed = models.DateTimeField(auto_now_add=True, db_index=True)
     forbidden = models.BooleanField(default=False)
     mods = models.ManyToManyField(User, through='ModRelation')
 
