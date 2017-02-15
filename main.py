@@ -93,7 +93,7 @@ def query_sub(r, sub):
     if (sub_model[1] == True):
         print("Added new sub " + sub)
 
-    curr_mods = set([m.username for m in sub_model[0].mods.all()])
+    curr_mods = set(sub_model[0].mods.values_list('username', flat=True))
     new_mods = set([m.name for m in sub_obj.moderator]) - set(('AutoModerator',))
 
     additions = new_mods - curr_mods
