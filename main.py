@@ -6,6 +6,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 
 from time import sleep
 from datetime import datetime, timedelta
+import signal,sys
 # Ensure settings are read
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
@@ -19,6 +20,12 @@ import re
 
 import praw
 import prawcore
+
+terminate = False
+
+def signal_handling(signum,frame):
+    global terminate
+    terminate = True
 
 # If a sub has been changed in the last week, there seems a higher probability
 # if will be changed more soon. The closer it has been since it last has been changed
@@ -138,6 +145,9 @@ def query_sub(r, sub):
         query.prev = last
         query.save()
 
+    if terminate:
+        print("goodbye")
+        sys.exit()
 
 
 def simple_method(reddit):
@@ -245,6 +255,7 @@ def simple_method(reddit):
 
 if __name__ == '__main__':
     LastChecked.objects.get_or_create(name='last_started', defaults={ 'last_checked' : datetime.now() })
+    signal.signal(signal.SIGINT,signal_handling)
     reddit = praw.Reddit(client_id='ufxVBVi9_Z03Gg',
                          client_secret='_zyrtt2C1oF2020U3dIBVHMb7V0',
                          user_agent='unix:modt:v0.7 (by /u/ssjjawa)')
