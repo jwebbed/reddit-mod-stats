@@ -151,8 +151,7 @@ def simple_method(reddit):
                         iters = (now - created) // delta
                     else:
                         iters = (now - action_entry.last_checked) // delta
-                    print(iters)
-                    iters = iters ** 0.7
+                    iters = iters ** 0.95
                     iters = max(int(iters), 1)
 
                     if iters > 1:
@@ -240,8 +239,12 @@ def simple_method(reddit):
             action()
 
 if __name__ == '__main__':
-    LastChecked.objects.get_or_create(name='last_started', defaults={ 'last_checked' : datetime.now() })
     signal.signal(signal.SIGINT,signal_handling)
+
+    entry = LastChecked.objects.get_or_create(name='last_started')
+    entry[0].last_checked = datetime.now()
+    entry[0].save()
+
     reddit = praw.Reddit(client_id='ufxVBVi9_Z03Gg',
                          client_secret='_zyrtt2C1oF2020U3dIBVHMb7V0',
                          user_agent='unix:modt:v0.9 (by /u/ssjjawa)')
