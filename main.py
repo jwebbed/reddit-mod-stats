@@ -128,6 +128,7 @@ def query_sub(r, sub):
                 ModRelation.objects.get(sub=sub_model[0], mod=user_query).delete()
 
         SubredditEventDetail.objects.bulk_create(relations)
+        sub_model[0].last_changed = now
 
     sub_model[0].last_checked = now
     sub_model[0].save()
