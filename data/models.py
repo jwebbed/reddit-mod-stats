@@ -27,7 +27,7 @@ class Subreddit(models.Model):
     subscribers = models.IntegerField(default=0, db_index=True)
     last_checked = models.DateTimeField(auto_now_add=True)
     last_changed = models.DateTimeField(auto_now_add=True, db_index=True)
-    forbidden = models.BooleanField(default=False)
+    forbidden = models.BooleanField(default=False, db_index=True)
     mods = models.ManyToManyField(User, through='ModRelation')
 
 class Event(Enum):
