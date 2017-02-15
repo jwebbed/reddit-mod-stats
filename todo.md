@@ -1,2 +1,1 @@
-* Cleanup
-  * If mods are unchanged don't record new mod references to stop database size explosions
+* Differentiate between private subs and subs that do not exist
