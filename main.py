@@ -93,8 +93,6 @@ def query_sub(r, sub):
     if (sub_model[1] == True):
         print("Added new sub " + sub)
 
-
-
     curr_mods = set([m.username for m in sub_model[0].mods.all()])
     new_mods = set([m.name for m in sub_obj.moderator]) - set(('AutoModerator',))
 
@@ -137,7 +135,6 @@ def query_sub(r, sub):
         print("goodbye")
         sys.exit()
 
-
 def simple_method(reddit):
     r = Random()
     def action(name, delta, action, strict=False):
@@ -154,7 +151,7 @@ def simple_method(reddit):
                         iters = (now - created) // delta
                     else:
                         iters = (now - action_entry.last_checked) // delta
-                    iters = iters ** 0.95
+                    iters = iters ** 0.7
                     iters = max(int(iters), 1)
 
                     if iters > 1:
