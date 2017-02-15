@@ -100,32 +100,45 @@ def query_sub(r, sub):
     for mod in sub_obj.moderator:
         if mod.name == 'AutoModerator':
             continue
-        mod_model = User.objects.get_or_create(username=mod.name)
-        mods.append(mod_model[0])
+
+        mods.append(mod.name)
 
         if new == False:
-            if mod_model[1] == True:
-                change = True
-
             removed = False
             for c in curr_mods:
-                if c.username == mod_model[0].username:
+                if c.username == mod.name:
                     curr_mods.remove(c)
                     removed = True
                     break
             if removed == False:
-                new_mods.append(mod_model[0])
+                new_mods.append(mod.name)
                 change = True
 
-    if new == False and (change == True or len(curr_mods) != 0):
-        print('Mods of ' + sub + ' have changed')
-        print('Removed: ' + str(curr_mods))
-        print('Added: ' + str(new_mods))
+    if len(new_mods) > 0 or len(curr_mods) > 0 or new == True:
+        if new == False:
+            print('Mods of ' + sub + ' have changed')
+            print('Added: ' + str(new_mods))
+            print('Removed: ' + str(curr_mods))
+        else:
+            pass
+
+        mod_queries = []
+        for mod in mods:
+            mod_model = User.objects.get_or_create(username=mod)
+            mod_queries.append(mod_model[0])
+
+        query.mods.add(*mod_queries)
+        query.prev = query
+        query.save()
+
         sub_model[0].last_changed = datetime.now()
         sub_model[0].save()
+    else:
+        last = SubredditQuery.objects.filter(sub=sub_model[0]).order_by('-time')[1]
+        query.prev = last
+        query.save()
 
-    query.mods.add(*mods)
-    query.save()
+
 
 def simple_method(reddit):
     r = Random()
