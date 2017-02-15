@@ -151,6 +151,7 @@ def simple_method(reddit):
                         iters = (now - created) // delta
                     else:
                         iters = (now - action_entry.last_checked) // delta
+                    print(iters)
                     iters = iters ** 0.7
                     iters = max(int(iters), 1)
 
