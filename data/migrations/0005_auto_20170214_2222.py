@@ -5,7 +5,7 @@ from __future__ import unicode_literals
 from django.db import migrations
 
 def update_prev(apps, schema_editor):
-    SubredditQuery = apps.get_model('SubredditQuery')
+    SubredditQuery = apps.get_model('data', 'SubredditQuery')
     for query in SubredditQuery.objects.all():
         if query.prev is None:
             query.prev = query
