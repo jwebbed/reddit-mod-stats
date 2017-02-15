@@ -76,6 +76,7 @@ def get_subs_by_size():
 
 
 def query_sub(r, sub):
+    now = datetime.now()
     sub_obj = reddit.subreddit(sub)
     sub_model = Subreddit.objects.get_or_create(name_lower=sub.lower(), defaults={'forbidden' : False})
     try:
@@ -88,62 +89,48 @@ def query_sub(r, sub):
         sub_model[0].save()
         return
 
+
     if (sub_model[1] == True):
         print("Added new sub " + sub)
-        curr_mods = []
-        new = True
-    else:
-        curr_mods = sub_model[0].latest_mods()
-        sub_model[0].last_checked = datetime.now()
-        sub_model[0].save()
-        new = False
 
-    query = SubredditQuery.objects.create(sub=sub_model[0])
-    query.save()
 
-    mods = []
-    new_mods = []
-    change = False
-    for mod in sub_obj.moderator:
-        if mod.name == 'AutoModerator':
-            continue
 
-        mods.append(mod.name)
+    curr_mods = set([m.username for m in sub_model[0].mods.all()])
+    new_mods = set([m.name for m in sub_obj.moderator]) - set(('AutoModerator',))
 
-        if new == False:
-            removed = False
-            for c in curr_mods:
-                if c.username == mod.name:
-                    curr_mods.remove(c)
-                    removed = True
-                    break
-            if removed == False:
-                new_mods.append(mod.name)
-                change = True
+    additions = new_mods - curr_mods
+    removals = curr_mods - new_mods
 
-    if len(new_mods) > 0 or len(curr_mods) > 0 or new == True:
-        if new == False:
-            print('Mods of ' + sub + ' have changed')
-            print('Added: ' + str(new_mods))
-            print('Removed: ' + str(curr_mods))
-        else:
-            pass
+    if len(additions) > 0 or len(removals) > 0:
+        print('Mods of ' + sub + ' have changed')
 
-        mod_queries = []
-        for mod in mods:
-            mod_model = User.objects.get_or_create(username=mod)
-            mod_queries.append(mod_model[0])
+        event = SubredditEvent(sub=sub_model[0], recorded=now, previous_check=sub_model[0].last_checked, new=sub_model[1])
+        event.save()
 
-        query.mods.add(*mod_queries)
-        query.prev = query
-        query.save()
+        relations = []
+        if len(additions) > 0:
+            print('Added: ' + str(additions))
+            for mod in additions:
+                user_query = User.objects.get_or_create(username=mod)
+                relations.append(SubredditEventDetail(event=event, user=user_query[0], addition=True))
 
-        sub_model[0].last_changed = datetime.now()
-        sub_model[0].save()
-    else:
-        last = SubredditQuery.objects.filter(sub=sub_model[0]).order_by('-time')[1]
-        query.prev = last.prev
-        query.save()
+                modrel = ModRelation(sub=sub_model[0], mod=user_query[0])
+                modrel.save()
+
+
+        if len(removals) > 0:
+            assert(sub_model[1] == False)
+            print('Removed: ' + str(removals))
+            for mod in removals:
+                user_query = User.objects.get(username=mod)
+                relations.append(SubredditEventDetail(event=event, user=user_query, addition=False))
+
+                ModRelation.objects.get(sub=sub_model[0], mod=user_query).delete()
+
+        SubredditEventDetail.objects.bulk_create(relations)
+
+    sub_model[0].last_checked = now
+    sub_model[0].save()
 
     if terminate:
         print("goodbye")

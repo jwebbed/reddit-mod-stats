@@ -15,6 +15,12 @@ class User(models.Model):
     def __str__(self):
         return self.username
 
+    def __hash__(self):
+        return hash(self.username)
+
+    def __eq__(self, other):
+        return self.username == other.username
+
 class Subreddit(models.Model):
     name_lower = models.CharField(max_length=22, primary_key=True)
     name = models.CharField(max_length=22)
