@@ -33,7 +33,7 @@ def signal_handling(signum,frame):
 # exponetially
 
 def get_subs_by_last_changed():
-    subs = Subreddit.objects.filter(forbidden=False).order_by('-last_changed')
+    subs = Subreddit.objects.filter(forbidden=False).order_by('-last_changed').only('last_changed', 'last_checked')
     threshold =  datetime.now() - timedelta(days=7)
     now = datetime.now()
     for sub in subs:
@@ -55,7 +55,7 @@ def get_subs_by_last_changed():
 # The frequency at which a sub should be checked is 2^(i - 2) hours
 
 def get_subs_by_size():
-    subs = Subreddit.objects.filter(forbidden=False).order_by('-subscribers')
+    subs = Subreddit.objects.filter(forbidden=False).order_by('-subscribers').only('last_changed', 'last_checked')
     remaining = subs.count()
     start = 0
     i = 0
