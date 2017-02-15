@@ -245,6 +245,6 @@ if __name__ == '__main__':
     signal.signal(signal.SIGINT,signal_handling)
     reddit = praw.Reddit(client_id='ufxVBVi9_Z03Gg',
                          client_secret='_zyrtt2C1oF2020U3dIBVHMb7V0',
-                         user_agent='unix:modt:v0.7 (by /u/ssjjawa)')
+                         user_agent='unix:modt:v0.9 (by /u/ssjjawa)')
 
     simple_method(reddit)

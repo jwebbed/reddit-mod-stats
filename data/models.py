@@ -30,16 +30,6 @@ class Subreddit(models.Model):
     forbidden = models.BooleanField(default=False)
     mods = models.ManyToManyField(User, through='ModRelation')
 
-    def latest_mods(self):
-        query = self.subredditquery_set.latest('time').prev
-        return [m for m in query.mods.all()]
-
-class SubredditQuery(models.Model):
-    sub = models.ForeignKey(Subreddit)
-    mods = models.ManyToManyField(User)
-    time = models.DateTimeField(auto_now_add=True)
-    prev = models.ForeignKey("SubredditQuery", null=True)
-
 class Event(Enum):
     NEW = 'NEW'
     ADDITION = 'ADDITION'
