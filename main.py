@@ -142,7 +142,7 @@ def query_sub(r, sub):
         sub_model[0].save()
     else:
         last = SubredditQuery.objects.filter(sub=sub_model[0]).order_by('-time')[1]
-        query.prev = last
+        query.prev = last.prev
         query.save()
 
     if terminate:
