@@ -1,5 +1,7 @@
 import sys
 from datetime import datetime
+from enumfields import EnumField
+from enum import Enum
 
 try:
     from django.db import models
@@ -20,10 +22,10 @@ class Subreddit(models.Model):
     last_checked = models.DateTimeField(auto_now_add=True)
     last_changed = models.DateTimeField(auto_now_add=True)
     forbidden = models.BooleanField(default=False)
+    mods = models.ManyToManyField(User, through='ModRelation')
 
     def latest_mods(self):
         query = self.subredditquery_set.latest('time').prev
-        
         return [m for m in query.mods.all()]
 
 class SubredditQuery(models.Model):
@@ -31,6 +33,26 @@ class SubredditQuery(models.Model):
     mods = models.ManyToManyField(User)
     time = models.DateTimeField(auto_now_add=True)
     prev = models.ForeignKey("SubredditQuery", null=True)
+
+class Event(Enum):
+    NEW = 'NEW'
+    ADDITION = 'ADDITION'
+    REMOVAL = 'REMOVAL'
+
+class SubredditEvent(models.Model):
+    sub = models.ForeignKey(Subreddit)
+    recorded = models.DateTimeField(auto_now_add=True)
+    previous_check = models.DateTimeField(null=True)
+    new = models.BooleanField()
+
+class SubredditEventDetail(models.Model):
+    event = models.ForeignKey(SubredditEvent)
+    user = models.ForeignKey(User)
+    addition = models.BooleanField()
+
+class ModRelation(models.Model):
+    sub = models.ForeignKey(Subreddit)
+    mod = models.ForeignKey(User)
 
 class LastChecked(models.Model):
     name = models.CharField(max_length=30, primary_key=True)
