@@ -31,6 +31,10 @@ def populate_subreddit_events(apps, schema_editor):
         prev_check = first.time
         for query in queries[1:]:
             mods = set([m.username for m in query.prev.mods.all()])
+
+            if len(mods) == 0:
+                continue
+                
             additions = mods - temporal_mods
             removals = temporal_mods - mods
 
