@@ -155,8 +155,7 @@ def simple_method(reddit):
 
                     if iters > 1:
                         print("Strict mode on, performing action " + name + " " + str(iters) + " times")
-                    for _ in range(iters):
-                        action()
+                    action(iters)
                 else:
                     action()
                 action_entry.last_checked = datetime.now()
@@ -169,8 +168,8 @@ def simple_method(reddit):
             print("Querying " + sub)
             query_sub(reddit, sub)
 
-    def random_action_impl():
-        for _ in range(2):
+    def random_action_impl(iters=1):
+        for _ in range(2 * iters):
             b = False
             if r.random() <= 0.05:
                 b = True
@@ -186,10 +185,10 @@ def simple_method(reddit):
             print("Querying " + name)
             query_sub(reddit, name)
 
-    def least_freq_action_impl():
-        for sub in Subreddit.objects.filter(forbidden=False).order_by('last_checked')[:2]:
-            print("Updating " + sub.name + " for least recently checked")
-            query_sub(reddit, sub.name_lower)
+    def least_freq_action_impl(iters=1):
+        for sub in Subreddit.objects.filter(forbidden=False).order_by('last_checked')[:(2 * iters)].value_list('name_lower', flat=True):
+            print("Updating " + sub + " for least recently checked")
+            query_sub(reddit, sub)
 
     def subs_by_size_action_impl():
         for sub in get_subs_by_size():
