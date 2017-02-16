@@ -33,20 +33,20 @@ def signal_handling(signum,frame):
 # exponetially
 
 def get_subs_by_last_changed():
-    subs = Subreddit.objects.filter(forbidden=False).order_by('-last_changed').only('last_changed', 'last_checked')
+    subs = Subreddit.objects.filter(forbidden=False).order_by('-last_changed').values('last_changed', 'last_checked', 'name_lower')
     threshold =  datetime.now() - timedelta(days=7)
     now = datetime.now()
     for sub in subs:
-        if sub.last_changed < threshold:
+        if sub['last_changed'] < threshold:
             break
-        diff = now - sub.last_changed
+        diff = now - sub['last_changed']
         mins = diff.total_seconds() // 60
         if mins <= 1:
             rank = 0
         else:
             rank = log2(mins)
-        if sub.last_checked < (now - timedelta(seconds=((2 ** rank) * 10))):
-            yield sub.name_lower
+        if sub['last_checked'] < (now - timedelta(seconds=((2 ** rank) * 10))):
+            yield sub['name_lower']
 
 
 # Priority Algorithm
@@ -55,17 +55,16 @@ def get_subs_by_last_changed():
 # The frequency at which a sub should be checked is 2^(i - 2) hours
 
 def get_subs_by_size():
-    subs = Subreddit.objects.filter(forbidden=False).order_by('-subscribers').only('last_changed', 'last_checked')
-    remaining = subs.count()
+    subs = Subreddit.objects.filter(forbidden=False).order_by('-subscribers').values('last_checked', 'name_lower')
+    remaining = len(subs)
     start = 0
     i = 0
     while True:
         t = datetime.now() - timedelta(minutes=(2**(i - 2)) * 60)
         end = min(2 ** (i + 8), remaining)
-        #print(end)
         for sub in subs[start:end]:
-            if sub.last_checked < t:
-                yield sub.name_lower
+            if sub['last_checked'] < t:
+                yield sub['name_lower']
 
         if end == remaining:
             break
