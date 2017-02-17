@@ -77,27 +77,23 @@ def get_subs_by_size():
 def query_sub(r, sub):
     now = datetime.now()
     sub_obj = reddit.subreddit(sub)
+    sub_model = Subreddit.objects.get_or_create(name_lower=sub.lower(), defaults={'forbidden' : False})
     try:
-        sub_model = Subreddit.objects.only('mods').get(name_lower=sub.lower())
-        new = False
-    except Subreddit.DoesNotExist:
-        sub_model = Subreddit(name_lower=sub.lower())
-        new = True
-
-    try:
-        if (new == True):
-            print("Added new sub " + sub_obj.display_name)
-            sub_model.subscribers = sub_obj.subscribers
-            sub_model.name = sub_obj.display_name
-            sub_model.save()
-        curr_mods = set(sub_model.mods.values_list('username', flat=True))
-        new_mods = set([m.name for m in sub_obj.moderator]) - set(('AutoModerator',))
+        sub_model[0].subscribers = sub_obj.subscribers
+        sub_model[0].name = sub_obj.display_name
+        sub_model[0].save()
     except prawcore.exceptions.PrawcoreException as e:
         print(e)
-        sub_model.forbidden = True
-        sub_model.save()
+        sub_model[0].forbidden = True
+        sub_model[0].save()
         return
 
+
+    if (sub_model[1] == True):
+        print("Added new sub " + sub)
+
+    curr_mods = set(sub_model[0].mods.values_list('username', flat=True))
+    new_mods = set([m.name for m in sub_obj.moderator]) - set(('AutoModerator',))
 
     additions = new_mods - curr_mods
     removals = curr_mods - new_mods
@@ -105,7 +101,7 @@ def query_sub(r, sub):
     if len(additions) > 0 or len(removals) > 0:
         print('Mods of ' + sub + ' have changed')
 
-        event = SubredditEvent(sub=sub_model, recorded=now, previous_check=sub_model.last_checked, new=new)
+        event = SubredditEvent(sub=sub_model[0], recorded=now, previous_check=sub_model[0].last_checked, new=sub_model[1])
         event.save()
 
         relations = []
@@ -115,24 +111,24 @@ def query_sub(r, sub):
                 user_query = User.objects.get_or_create(username=mod)
                 relations.append(SubredditEventDetail(event=event, user=user_query[0], addition=True))
 
-                modrel = ModRelation(sub=sub_model, mod=user_query[0])
+                modrel = ModRelation(sub=sub_model[0], mod=user_query[0])
                 modrel.save()
 
 
         if len(removals) > 0:
-            assert(new == False)
+            assert(sub_model[1] == False)
             print('Removed: ' + str(removals))
             for mod in removals:
                 user_query = User.objects.get(username=mod)
-                relations.append(SubredditEventDetail(event=event, user=user_query[0], addition=False))
+                relations.append(SubredditEventDetail(event=event, user=user_query, addition=False))
 
-                ModRelation.objects.get(sub=sub_model, mod=user_query[0]).delete()
+                ModRelation.objects.get(sub=sub_model[0], mod=user_query).delete()
 
         SubredditEventDetail.objects.bulk_create(relations)
-        sub_model.last_changed = now
+        sub_model[0].last_changed = now
 
-    sub_model.last_checked = now
-    sub_model.save()
+    sub_model[0].last_checked = now
+    sub_model[0].save()
 
     if terminate:
         print("goodbye")
