@@ -168,6 +168,12 @@ def simple_method(reddit):
             print("Querying " + sub)
             query_sub(reddit, sub)
 
+    def popular_action_impl():
+        print("Querying top 100 r/popular subs")
+        for sub in set([post.subreddit.display_name for post in reddit.subreddit('popular').hot(limit=100)]):
+            print("Querying " + sub)
+            query_sub(reddit, sub)
+
     def random_action_impl(iters=1):
         for _ in range(2 * iters):
             b = False
@@ -219,7 +225,8 @@ def simple_method(reddit):
     actions = (
         action('changed', False, subs_by_last_changed_action_impl),
         action('size', False, subs_by_size_action_impl),
-        action('rall', timedelta(hours=1), rall_action_impl),
+        action('rall', timedelta(hours=4), rall_action_impl),
+        action('popular', timedelta(hours=4), rall_action_impl),
         action('random', timedelta(seconds=3), random_action_impl, True),
         #action('random', False, random_action_impl),
         action('least_freq', timedelta(seconds=3), least_freq_action_impl, True),
