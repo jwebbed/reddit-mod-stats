@@ -226,7 +226,7 @@ def simple_method(reddit):
         action('changed', False, subs_by_last_changed_action_impl),
         action('size', False, subs_by_size_action_impl),
         action('rall', timedelta(hours=4), rall_action_impl),
-        action('popular', timedelta(hours=4), rall_action_impl),
+        action('popular', timedelta(hours=4), popular_action_impl),
         action('random', timedelta(seconds=3), random_action_impl, True),
         #action('random', False, random_action_impl),
         action('least_freq', timedelta(seconds=3), least_freq_action_impl, True),
