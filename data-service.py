@@ -191,8 +191,9 @@ def simple_method(reddit):
             print("Querying " + name)
             query_sub(reddit, name)
 
-    def least_freq_action_impl(iters=1):
-        for sub in Subreddit.objects.filter(forbidden=False).order_by('last_checked')[:(2 * iters)].values_list('name_lower', flat=True):
+    def least_freq_action_impl():
+        threshold = datetime.now() - timedelta(days=2, hours=20)
+        for sub in Subreddit.objects.filter(forbidden=False, last_checked__lt=threshold).order_by('last_checked')[:3].values_list('name_lower', flat=True):
             print("Updating " + sub + " for least recently checked")
             query_sub(reddit, sub)
 
@@ -225,12 +226,10 @@ def simple_method(reddit):
     actions = (
         action('changed', False, subs_by_last_changed_action_impl),
         action('size', False, subs_by_size_action_impl),
+        action('random', timedelta(seconds=3), random_action_impl, True),
         action('rall', timedelta(hours=4), rall_action_impl),
         action('popular', timedelta(hours=4), popular_action_impl),
-        action('random', timedelta(seconds=3), random_action_impl, True),
-        #action('random', False, random_action_impl),
-        action('least_freq', timedelta(seconds=3), least_freq_action_impl, True),
-        #action('least_freq', False, least_freq_action_impl),
+        action('least_freq', False, least_freq_action_impl),
         action('trending', timedelta(hours=24), trending_action_impl),
         action('newreddits', timedelta(hours=6), sub_action_impl('newreddits')),
         action('redditrequest', timedelta(hours=6), sub_action_impl('redditrequest')),
@@ -254,6 +253,6 @@ if __name__ == '__main__':
 
     reddit = praw.Reddit(client_id='ufxVBVi9_Z03Gg',
                          client_secret='_zyrtt2C1oF2020U3dIBVHMb7V0',
-                         user_agent='unix:modt:v0.9 (by /u/ssjjawa)')
+                         user_agent='unix:modt:v0.10 (by /u/ssjjawa)')
 
     simple_method(reddit)
