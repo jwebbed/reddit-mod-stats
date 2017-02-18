@@ -1,7 +1,5 @@
 import sys
 from datetime import datetime
-from enumfields import EnumField
-from enum import Enum
 
 try:
     from django.db import models
@@ -29,11 +27,6 @@ class Subreddit(models.Model):
     last_changed = models.DateTimeField(auto_now_add=True, db_index=True)
     forbidden = models.BooleanField(default=False, db_index=True)
     mods = models.ManyToManyField(User, through='ModRelation')
-
-class Event(Enum):
-    NEW = 'NEW'
-    ADDITION = 'ADDITION'
-    REMOVAL = 'REMOVAL'
 
 class SubredditEvent(models.Model):
     sub = models.ForeignKey(Subreddit, related_name='events')
