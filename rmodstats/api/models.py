@@ -36,13 +36,13 @@ class Event(Enum):
     REMOVAL = 'REMOVAL'
 
 class SubredditEvent(models.Model):
-    sub = models.ForeignKey(Subreddit)
+    sub = models.ForeignKey(Subreddit, related_name='events')
     recorded = models.DateTimeField(auto_now_add=True)
     previous_check = models.DateTimeField(null=True)
     new = models.BooleanField()
 
 class SubredditEventDetail(models.Model):
-    event = models.ForeignKey(SubredditEvent)
+    event = models.ForeignKey(SubredditEvent, related_name='details')
     user = models.ForeignKey(User)
     addition = models.BooleanField()
 
