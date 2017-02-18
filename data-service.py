@@ -2,7 +2,7 @@
 
 # Django specific settings
 import os
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "rmodstats.settings")
 
 from time import sleep
 from datetime import datetime, timedelta
@@ -12,7 +12,7 @@ from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
 # Your application specific imports
-from data.models import *
+from rmodstats.api.models import *
 
 from random import Random
 from math import log2
