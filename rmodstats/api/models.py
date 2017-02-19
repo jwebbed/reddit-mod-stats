@@ -26,6 +26,7 @@ class Subreddit(models.Model):
     last_checked = models.DateTimeField(auto_now_add=True)
     last_changed = models.DateTimeField(auto_now_add=True, db_index=True)
     forbidden = models.BooleanField(default=False, db_index=True)
+    nsfw = models.BooleanField(default=False)
     mods = models.ManyToManyField(User, through='ModRelation')
 
 class SubredditEvent(models.Model):

@@ -81,6 +81,7 @@ def query_sub(r, sub):
     try:
         sub_model[0].subscribers = sub_obj.subscribers
         sub_model[0].name = sub_obj.display_name
+        sub_model[0].nsfw = sub_obj.over18
         sub_model[0].save()
     except praw.errors.NotFound:
         sub_model[0].delete()

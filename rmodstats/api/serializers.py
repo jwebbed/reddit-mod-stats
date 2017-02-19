@@ -18,4 +18,4 @@ class SubredditSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Subreddit
-        fields = ('name', 'subscribers', 'last_checked', 'last_changed', 'mods', 'events',)
+        fields = ('name', 'subscribers', 'nsfw', 'last_checked', 'last_changed', 'mods', 'events', )

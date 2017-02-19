@@ -75,7 +75,7 @@ REST_FRAMEWORK = {
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
-if os.environ['RMSENV'] == 'prod':
+if 'RMSENV' in os.environ and os.environ['RMSENV'] == 'prod':
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
