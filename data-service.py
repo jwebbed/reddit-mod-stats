@@ -83,9 +83,6 @@ def query_sub(r, sub):
         sub_model[0].name = sub_obj.display_name
         sub_model[0].nsfw = sub_obj.over18
         sub_model[0].save()
-    except praw.errors.NotFound:
-        sub_model[0].delete()
-        return
     except prawcore.exceptions.PrawcoreException as e:
         print(e)
         sub_model[0].forbidden = True
@@ -105,7 +102,9 @@ def query_sub(r, sub):
     if len(additions) > 0 or len(removals) > 0:
         print('Mods of ' + sub + ' have changed')
 
-        event = SubredditEvent(sub=sub_model[0], recorded=now, previous_check=sub_model[0].last_checked, new=sub_model[1])
+        event = SubredditEvent(sub=sub_model[0], recorded=now, new=sub_model[1])
+        if sub_model[1] == False
+            event.previous_check = sub_model[0].last_checked
         event.save()
 
         relations = []
