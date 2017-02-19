@@ -229,8 +229,8 @@ def simple_method(reddit):
     actions = (
         action('changed', False, subs_by_last_changed_action_impl),
         action('size', False, subs_by_size_action_impl),
-        action('random', timedelta(seconds=3), random_action_impl, True),
         action('least_freq', False, least_freq_action_impl),
+        action('random', timedelta(seconds=3), random_action_impl, True),
         action('rall', timedelta(hours=4), rall_action_impl),
         action('popular', timedelta(hours=4), popular_action_impl),
         action('trending', timedelta(hours=24), trending_action_impl),
