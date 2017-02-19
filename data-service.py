@@ -82,6 +82,9 @@ def query_sub(r, sub):
         sub_model[0].subscribers = sub_obj.subscribers
         sub_model[0].name = sub_obj.display_name
         sub_model[0].save()
+    except praw.errors.NotFound:
+        sub_model[0].delete()
+        return
     except prawcore.exceptions.PrawcoreException as e:
         print(e)
         sub_model[0].forbidden = True
@@ -192,7 +195,7 @@ def simple_method(reddit):
             query_sub(reddit, name)
 
     def least_freq_action_impl():
-        threshold = datetime.now() - timedelta(days=2, hours=20)
+        threshold = datetime.now() - timedelta(hours=12)
         for sub in Subreddit.objects.filter(forbidden=False, last_checked__lt=threshold).order_by('last_checked')[:3].values_list('name_lower', flat=True):
             print("Updating " + sub + " for least recently checked")
             query_sub(reddit, sub)
@@ -227,9 +230,9 @@ def simple_method(reddit):
         action('changed', False, subs_by_last_changed_action_impl),
         action('size', False, subs_by_size_action_impl),
         action('random', timedelta(seconds=3), random_action_impl, True),
+        action('least_freq', False, least_freq_action_impl),
         action('rall', timedelta(hours=4), rall_action_impl),
         action('popular', timedelta(hours=4), popular_action_impl),
-        action('least_freq', False, least_freq_action_impl),
         action('trending', timedelta(hours=24), trending_action_impl),
         action('newreddits', timedelta(hours=6), sub_action_impl('newreddits')),
         action('redditrequest', timedelta(hours=6), sub_action_impl('redditrequest')),
