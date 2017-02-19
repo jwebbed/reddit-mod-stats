@@ -103,7 +103,7 @@ def query_sub(r, sub):
         print('Mods of ' + sub + ' have changed')
 
         event = SubredditEvent(sub=sub_model[0], recorded=now, new=sub_model[1])
-        if sub_model[1] == False
+        if sub_model[1] == False:
             event.previous_check = sub_model[0].last_checked
         event.save()
 
