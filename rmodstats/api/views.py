@@ -21,15 +21,7 @@ class ModViewSet(viewsets.ReadOnlyModelViewSet):
     relevent information.
     """
     serializer_class = UserSerializer
-
-    def get_queryset(self):
-        mods = ModRelation.objects.annotate(subs_modded=Count('sub', distinct=True)).filter(subs_modded__gt=1).values_list('mod', flat=True)
-        return User.objects.filter(username__in=mods)
-
-    def list(self, request, format=None):
-        #mods = ModRelation.objects.annotate(subs_modded=Count('sub_id', distinct=True)).values()
-        mods = User.objects.annotate(subs_modded=Count('subreddit')).values()
-        return response.Response(mods)
+    queryset = User.objects.annotate(subs_modded=Count('subreddit')).filter(subs_modded__gt=1)
 
 class StatusView(views.APIView):
     def get(self, request, format=None):
