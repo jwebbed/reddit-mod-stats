@@ -7,6 +7,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "rmodstats.settings")
 from time import sleep
 from datetime import datetime, timedelta
 import signal,sys
+from traceback import format_exc
 # Ensure settings are read
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
@@ -133,6 +134,8 @@ def query_sub(r, sub):
     sub_model[0].last_checked = now
     sub_model[0].save()
 
+    raise Exception('test')
+
     if terminate:
         print("goodbye")
         sys.exit()
@@ -258,10 +261,17 @@ if __name__ == '__main__':
                          client_secret='_zyrtt2C1oF2020U3dIBVHMb7V0',
                          user_agent='unix:modt:v0.10 (by /u/ssjjawa)')
     while True:
+        tb = None
+        now = None
         try:
             simple_method(reddit)
-        except e:
-            print(e)
+        except:
+            now = datetime.now()
+            tb = format_exc()
+            print('Received unhandled internal exception. Logging, sleeping, and resuming.')
+
+        Failure.objects.create(traceback=tb, time=now)
+
         for _ in range(60):
             sleep(1)
             if terminate:

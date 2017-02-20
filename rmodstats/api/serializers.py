@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from rmodstats.api.models import Subreddit, SubredditEvent, SubredditEventDetail, User
+from rmodstats.api.models import Subreddit, SubredditEvent, SubredditEventDetail, User, Failure
 
 class SubredditEventDetailSerializer(serializers.ModelSerializer):
     class Meta:
@@ -31,3 +31,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'modded_subs')
+
+class FailureSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Failure
+        fields = ('time', 'traceback',)

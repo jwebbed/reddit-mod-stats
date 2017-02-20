@@ -47,3 +47,7 @@ class ModRelation(models.Model):
 class LastChecked(models.Model):
     name = models.CharField(max_length=30, primary_key=True)
     last_checked = models.DateTimeField(default=datetime(1970, 1, 1))
+
+class Failure(models.Model):
+    time = models.DateTimeField(auto_now_add=True)
+    traceback = models.TextField()
