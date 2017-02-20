@@ -23,7 +23,7 @@ class ModViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = UserSerializer
 
     def get_queryset(self):
-        mods = ModRelation.objects.annotate(subs_modded=Count('sub')).filter(subs_modded__gt=1).values_list('sub', flat=True)
+        mods = ModRelation.objects.annotate(subs_modded=Count('sub', distinct=True)).filter(subs_modded__gt=1).values_list('mod', flat=True)
         return User.objects.filter(username__in=mods)
 
 class StatusView(views.APIView):
