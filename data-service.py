@@ -134,8 +134,6 @@ def query_sub(r, sub):
     sub_model[0].last_checked = now
     sub_model[0].save()
 
-    raise Exception('test')
-
     if terminate:
         print("goodbye")
         sys.exit()
@@ -270,10 +268,10 @@ if __name__ == '__main__':
             tb = format_exc()
             print('Received unhandled internal exception. Logging, sleeping, and resuming.')
 
-        Failure.objects.create(traceback=tb, time=now)
-
         for _ in range(60):
             sleep(1)
             if terminate:
                 print("goodbye")
                 sys.exit()
+
+        Failure.objects.create(traceback=tb, time=now)
