@@ -257,5 +257,13 @@ if __name__ == '__main__':
     reddit = praw.Reddit(client_id='ufxVBVi9_Z03Gg',
                          client_secret='_zyrtt2C1oF2020U3dIBVHMb7V0',
                          user_agent='unix:modt:v0.10 (by /u/ssjjawa)')
-
-    simple_method(reddit)
+    while True:
+        try:
+            simple_method(reddit)
+        except e:
+            print(e)
+        for _ in range(60):
+            sleep(1)
+            if terminate:
+                print("goodbye")
+                sys.exit()
