@@ -30,7 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'modded_subs')
+        fields = ('username', 'modded_subs', 'subreddit_set')
 
 class FailureSerializer(serializers.ModelSerializer):
     class Meta:
