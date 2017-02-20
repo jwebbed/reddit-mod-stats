@@ -20,17 +20,12 @@ class SubredditSerializer(serializers.ModelSerializer):
         model = Subreddit
         fields = ('name', 'subscribers', 'nsfw', 'last_checked', 'last_changed', 'mods', 'events', )
 
-class UserSubredditSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Subreddit
-        fields = ('name',)
-
 class UserSerializer(serializers.ModelSerializer):
-    modded_subs = UserSubredditSerializer(source='subreddit_set', many=True, read_only=True)
+    modded_subs = serializers.SerializerMethodField('get_subreddit_set')
 
     class Meta:
         model = User
-        fields = ('username', 'modded_subs', 'subreddit_set')
+        fields = ('username', 'modded_subs',)
 
 class FailureSerializer(serializers.ModelSerializer):
     class Meta:
