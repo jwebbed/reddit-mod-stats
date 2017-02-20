@@ -46,7 +46,7 @@ def get_subs_by_last_changed():
             rank = 0
         else:
             rank = log2(mins)
-        if sub['last_checked'] < (now - timedelta(seconds=((2 ** rank) * 10))):
+        if sub['last_checked'] < (now - timedelta(seconds=((2 ** rank) * 30))):
             yield sub['name_lower']
 
 
@@ -61,7 +61,7 @@ def get_subs_by_size():
     start = 0
     i = 0
     while True:
-        t = datetime.now() - timedelta(minutes=(2**(i - 2)) * 60)
+        t = datetime.now() - timedelta(minutes=(2**(i - 1)) * 60)
         end = min(2 ** (i + 8), remaining)
         for sub in subs[start:end]:
             if sub['last_checked'] < t:
