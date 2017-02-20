@@ -196,8 +196,8 @@ def simple_method(reddit):
             query_sub(reddit, name)
 
     def least_freq_action_impl():
-        threshold = datetime.now() - timedelta(hours=12)
-        for sub in Subreddit.objects.filter(forbidden=False, last_checked__lt=threshold).order_by('last_checked')[:3].values_list('name_lower', flat=True):
+        threshold = datetime.now() - timedelta(hours=6)
+        for sub in Subreddit.objects.filter(forbidden=False, last_checked__lt=threshold).order_by('last_checked')[:5].values_list('name_lower', flat=True):
             print("Updating " + sub + " for least recently checked")
             query_sub(reddit, sub)
 
