@@ -4,7 +4,7 @@ from rmodstats.api import views
 
 router = routers.DefaultRouter()
 router.register(r'subreddit', views.SubredditViewSet)
-router.register(r'mods', views.ModViewSet)
+router.register(r'mods', views.ModViewSet, base_name='user')
 
 urlpatterns = [
     url(r'^api/v1/', include(router.urls)),

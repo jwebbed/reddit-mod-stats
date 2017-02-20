@@ -1,7 +1,9 @@
 from rest_framework import viewsets, views, response
-from django.db.models import Max
+from rest_framework import status
+from django.db.models import Max, Count
 from datetime import datetime
-from rmodstats.api.models import Subreddit, User, Failure
+from queue import Queue
+from rmodstats.api.models import Subreddit, User, Failure, ModRelation
 from rmodstats.api.serializers import SubredditSerializer, UserSerializer, FailureSerializer
 
 
@@ -14,10 +16,15 @@ class SubredditViewSet(viewsets.ReadOnlyModelViewSet):
 
 class ModViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    API endpoint that allows subreddits to be viewed
+    API endpoint that returns all users that mod at least 2 subreddits. It
+    restricts it to this as these are the only mods that contribute any
+    relevent information.
     """
-    queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    def get_queryset(self):
+        mods = ModRelation.objects.annotate(subs_modded=Count('sub')).filter(subs_modded__gt=1).values_list('sub', flat=True)
+        return User.objects.filter(username__in=mods)
 
 class StatusView(views.APIView):
     def get(self, request, format=None):
