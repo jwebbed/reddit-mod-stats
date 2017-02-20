@@ -28,7 +28,7 @@ class ModViewSet(viewsets.ReadOnlyModelViewSet):
 
     def list(self, request, format=None):
         #mods = ModRelation.objects.annotate(subs_modded=Count('sub_id', distinct=True)).values()
-        mods = User.objects.annotate(subs_modded=Count('subreddit_set')).values()
+        mods = User.objects.annotate(subs_modded=Count('subreddit')).values()
         return response.Response(mods)
 
 class StatusView(views.APIView):
