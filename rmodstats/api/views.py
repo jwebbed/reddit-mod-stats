@@ -35,3 +35,26 @@ class StatusView(views.APIView):
         res['failures'] = serializer.data
 
         return response.Response(res)
+
+
+def get_edges(sub):
+    edge_set = []
+    sub_query = Subreddit.objects.get(name_lower=sub.lower())
+    for mod in sub_query.mods.all():
+        for sub in mod.subreddit_set.all():
+            if sub.name_lower == sub_query.name_lower:
+                continue
+            edge_set.append({
+                'mod'  : mod.username,
+                'from' : sub_query.name_lower,
+                'to'   : sub.name_lower
+            })
+
+    return edge_set
+
+
+
+class EdgeViewSet(viewsets.ViewSet):
+    def list(self, request, sub_pk=None):
+        edges = get_edges(sub_pk)
+        return response.Response(edges)
