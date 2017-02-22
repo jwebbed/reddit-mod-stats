@@ -12,252 +12,42 @@ from traceback import format_exc
 from django.core.wsgi import get_wsgi_application
 application = get_wsgi_application()
 
+
 # Your application specific imports
 from rmodstats.api.models import *
+from data_service.termination import *
 
-from random import Random
-from math import log2
-import re
+
+from data_service.actions import get_actions
 
 import praw
 import prawcore
 
-terminate = False
-
-def signal_handling(signum,frame):
-    global terminate
-    terminate = True
-
-# If a sub has been changed in the last week, there seems a higher probability
-# if will be changed more soon. The closer it has been since it last has been changed
-# the higher the frequency we check it starting at 1m and 10s and increasing
-# exponetially
-
-def get_subs_by_last_changed():
-    subs = Subreddit.objects.filter(forbidden=False).order_by('-last_changed').values('last_changed', 'last_checked', 'name_lower')
-    threshold =  datetime.now() - timedelta(days=7)
-    now = datetime.now()
-    for sub in subs:
-        if sub['last_changed'] < threshold:
-            break
-        diff = now - sub['last_changed']
-        mins = diff.total_seconds() // 60
-        if mins <= 1:
-            rank = 0
-        else:
-            rank = log2(mins)
-        if sub['last_checked'] < (now - timedelta(seconds=((2 ** rank) * 30))):
-            yield sub['name_lower']
-
-
-# Priority Algorithm
-# Broken into n bins size 2^(i + 8) starting at i = 0
-# Bins are for the largest subs
-# The frequency at which a sub should be checked is 2^(i - 2) hours
-
-def get_subs_by_size():
-    subs = Subreddit.objects.filter(forbidden=False).order_by('-subscribers').values('last_checked', 'name_lower')
-    remaining = len(subs)
-    start = 0
-    i = 0
-    while True:
-        t = datetime.now() - timedelta(minutes=(2**(i - 1)) * 60)
-        end = min(2 ** (i + 8), remaining)
-        for sub in subs[start:end]:
-            if sub['last_checked'] < t:
-                yield sub['name_lower']
-
-        if end == remaining:
-            break
-        else:
-            remaining -= end
-            start += end
-            i += 1
-
-
-def query_sub(r, sub):
-    now = datetime.now()
-    sub_obj = reddit.subreddit(sub)
-    sub_model = Subreddit.objects.get_or_create(name_lower=sub.lower(), defaults={'forbidden' : False})
-    try:
-        sub_model[0].subscribers = sub_obj.subscribers
-        sub_model[0].name = sub_obj.display_name
-        sub_model[0].nsfw = sub_obj.over18
-        sub_model[0].save()
-    except prawcore.exceptions.PrawcoreException as e:
-        print(e)
-        sub_model[0].forbidden = True
-        sub_model[0].save()
-        return
-
-
-    if (sub_model[1] == True):
-        print("Added new sub " + sub)
-
-    curr_mods = set(sub_model[0].mods.values_list('username', flat=True))
-    new_mods = set([m.name for m in sub_obj.moderator]) - set(('AutoModerator',))
-
-    additions = new_mods - curr_mods
-    removals = curr_mods - new_mods
-
-    if len(additions) > 0 or len(removals) > 0:
-        print('Mods of ' + sub + ' have changed')
-
-        event = SubredditEvent(sub=sub_model[0], recorded=now, new=sub_model[1])
-        if sub_model[1] == False:
-            event.previous_check = sub_model[0].last_checked
-        event.save()
-
-        relations = []
-        if len(additions) > 0:
-            print('Added: ' + str(additions))
-            for mod in additions:
-                user_query = User.objects.get_or_create(username=mod)
-                relations.append(SubredditEventDetail(event=event, user=user_query[0], addition=True))
-
-                modrel = ModRelation(sub=sub_model[0], mod=user_query[0])
-                modrel.save()
-
-
-        if len(removals) > 0:
-            assert(sub_model[1] == False)
-            print('Removed: ' + str(removals))
-            for mod in removals:
-                user_query = User.objects.get(username=mod)
-                relations.append(SubredditEventDetail(event=event, user=user_query, addition=False))
-
-                ModRelation.objects.get(sub=sub_model[0], mod=user_query).delete()
-
-        SubredditEventDetail.objects.bulk_create(relations)
-        sub_model[0].last_changed = now
-
-    sub_model[0].last_checked = now
-    sub_model[0].save()
-
-    if terminate:
-        print("goodbye")
-        sys.exit()
-
 def simple_method(reddit):
-    r = Random()
-    def action(name, delta, action, strict=False):
-        if delta:
-            created = LastChecked.objects.get(name='last_started').last_checked
-            action_entry = LastChecked.objects.get_or_create(name=name)[0]
-        def perform():
-            now = datetime.now()
-            if delta == False:
-                action()
-            elif action_entry.last_checked < now - delta:
-                if strict:
-                    if action_entry.last_checked < created:
-                        iters = (now - created) // delta
-                    else:
-                        iters = (now - action_entry.last_checked) // delta
-                    iters = iters ** 0.95
-                    iters = max(int(iters), 1)
-
-                    if iters > 1:
-                        print("Strict mode on, performing action " + name + " " + str(iters) + " times")
-                    action(iters)
-                else:
-                    action()
-                action_entry.last_checked = datetime.now()
-                action_entry.save()
-        return perform
-
-    def rall_action_impl():
-        print("Querying top 100 r/all subs")
-        for sub in set([post.subreddit.display_name for post in reddit.subreddit('all').hot(limit=100)]):
-            print("Querying " + sub)
-            query_sub(reddit, sub)
-
-    def popular_action_impl():
-        print("Querying top 100 r/popular subs")
-        for sub in set([post.subreddit.display_name for post in reddit.subreddit('popular').hot(limit=100)]):
-            print("Querying " + sub)
-            query_sub(reddit, sub)
-
-    def random_action_impl(iters=1):
-        for _ in range(2 * iters):
-            b = False
-            if r.random() <= 0.05:
-                b = True
-            sub = reddit.random_subreddit(nsfw=b)
-            print("Querying " + sub.display_name + " randomly")
-            query_sub(reddit, sub.display_name)
-
-    def trending_action_impl():
-        print("Querying daily trending")
-        post = list(reddit.subreddit('trendingsubreddits').new(limit=1))[0]
-        for sub in set(re.findall('/r/[A-Za-z]+', str(post.selftext))):
-            name = sub[3:]
-            print("Querying " + name)
-            query_sub(reddit, name)
-
-    def least_freq_action_impl():
-        threshold = datetime.now() - timedelta(hours=6)
-        for sub in Subreddit.objects.filter(forbidden=False, last_checked__lt=threshold).order_by('last_checked')[:5].values_list('name_lower', flat=True):
-            print("Updating " + sub + " for least recently checked")
-            query_sub(reddit, sub)
-
-    def subs_by_size_action_impl():
-        for sub in get_subs_by_size():
-            print("Updating " + sub + " for size")
-            query_sub(reddit, sub)
-
-    def subs_by_last_changed_action_impl():
-        for sub in get_subs_by_last_changed():
-            print("Updating " + sub + " for recently changed")
-            query_sub(reddit, sub)
-
-    def sub_action_impl(s):
-        def f():
-            subs = set()
-            for post in reddit.subreddit(s).new(limit=25):
-                match = re.search('/r/[A-Za-z]+', str(post.url))
-                if match:
-                    name = match.group(0)[3:]
-                    subs.add(name)
-                if 'selftext' in dir(post) or 'selftext' in vars(post):
-                    for m in re.findall('/r/[A-Za-z]+', str(post.selftext)):
-                        subs.add(m[3:])
-            for sub in subs:
-                print("Querying " + sub)
-                query_sub(reddit, sub)
-        return f
-
-    actions = (
-        action('changed', False, subs_by_last_changed_action_impl),
-        action('size', False, subs_by_size_action_impl),
-        action('least_freq', False, least_freq_action_impl),
-        action('random', timedelta(seconds=3), random_action_impl, True),
-        action('rall', timedelta(hours=4), rall_action_impl),
-        action('popular', timedelta(hours=4), popular_action_impl),
-        action('trending', timedelta(hours=24), trending_action_impl),
-        action('newreddits', timedelta(hours=6), sub_action_impl('newreddits')),
-        action('redditrequest', timedelta(hours=6), sub_action_impl('redditrequest')),
-        action('adoptareddit', timedelta(hours=6), sub_action_impl('adoptareddit')),
-        action('NOTSONEWREDDITS', timedelta(hours=6), sub_action_impl('NOTSONEWREDDITS')),
-        action('obscuresubreddits', timedelta(hours=6), sub_action_impl('obscuresubreddits')),
-        action('newreddits_nsfw', timedelta(hours=6), sub_action_impl('newreddits_nsfw')),
-    )
-
+    actions = get_actions(reddit)
 
     while True:
+        activity = False
         for action in actions:
-            action()
+            activity |= action.perform()
+            if terminate:
+                print("goodbye")
+                sys.exit()
+        if not activity:
+            now = datetime.now()
+            times = [action.ready(now) for action in actions]
+            print(times)
+            sleep(min(times))
 
 if __name__ == '__main__':
-    signal.signal(signal.SIGINT,signal_handling)
-
+    register_termination()
     entry = LastChecked.objects.get_or_create(name='last_started')
     entry[0].last_checked = datetime.now()
     entry[0].save()
 
     reddit = praw.Reddit(client_id='ufxVBVi9_Z03Gg',
                          client_secret='_zyrtt2C1oF2020U3dIBVHMb7V0',
-                         user_agent='unix:modt:v0.10 (by /u/ssjjawa)')
+                         user_agent='unix:modt:v0.11 (by /u/ssjjawa)')
     while True:
         tb = None
         now = None
@@ -269,9 +59,8 @@ if __name__ == '__main__':
             print('Received unhandled internal exception. Logging, sleeping, and resuming.')
 
         for _ in range(60):
+            check_terminate()
             sleep(1)
-            if terminate:
-                print("goodbye")
-                sys.exit()
+
 
         Failure.objects.create(traceback=tb, time=now)
