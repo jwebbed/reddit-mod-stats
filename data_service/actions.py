@@ -318,7 +318,7 @@ def get_actions(reddit):
         SubAction(reddit, 'newreddits', timedelta(hours=6)),
         SubAction(reddit, 'redditrequest', timedelta(hours=6)),
         SubAction(reddit, 'adoptareddit', timedelta(hours=6)),
-        SubAction(reddit, 'NOTSONEWREDDITS', timedelta(hours=6)),
-        SubAction(reddit, 'obscuresubreddits', timedelta(hours=6)),
-        SubAction(reddit, 'newreddits_nsfw', timedelta(hours=6)),
+        SubAction(reddit, 'NOTSONEWREDDITS', timedelta(days=1)),
+        SubAction(reddit, 'obscuresubreddits', timedelta(days=1)),
+        SubAction(reddit, 'newreddits_nsfw', timedelta(days=1)),
     )
