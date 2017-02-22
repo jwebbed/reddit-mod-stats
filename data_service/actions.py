@@ -233,7 +233,7 @@ class LeastFreqAction(Action):
         for sub in Subreddit.objects.filter(forbidden=False, last_checked__lt=threshold).order_by('last_checked')[:5].values_list('name_lower', flat=True):
             performed = True
             print("Updating " + sub + " for least recently checked")
-            query_sub(reddit, sub)
+            query_sub(self.reddit, sub)
 
         if performed == False:
             self._update_current_oldest()
