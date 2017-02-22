@@ -37,8 +37,9 @@ def simple_method(reddit):
             now = datetime.now()
             times = [action.ready(now) for action in actions]
             sleep_time = min(times)
-            print('Sleeping for ' + str(sleep_time) + 's')
-            sleep(sleep_time)
+            if sleep_time > 0:
+                print('Sleeping for ' + str(sleep_time) + 's')
+                sleep(sleep_time)
 
 if __name__ == '__main__':
     register_termination()
@@ -59,7 +60,7 @@ if __name__ == '__main__':
             tb = format_exc()
             print('Received unhandled internal exception. Logging, sleeping, and resuming.')
             print(tb)
-            
+
         for _ in range(60):
             check_terminate()
             sleep(1)
