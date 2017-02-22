@@ -43,7 +43,7 @@ class TimerAction(Action):
             self.db_entry.last_checked = datetime.now() - delta
             self.db_entry.save()
         elif query[1] == False and strict == True and self.db_entry.last_checked < created - delta:
-            self.db_entry.last_checked = created
+            self.db_entry.last_checked = created - delta
             self.db_entry.save()
 
         self.name = name
