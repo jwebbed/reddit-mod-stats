@@ -20,24 +20,31 @@ class SubredditViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         serializer = RetrieveSubredditSerializer(sub)
         return response.Response(serializer.data)
 
-def get_edges(sub):
-    edge_set = []
+def get_edges(sub, prev_checked, depth_cap):
+    edge_set, ancestor_set = [], []
     sub_query = Subreddit.objects.get(name_lower=sub)
     for mod in sub_query.mods.all():
         for sub in mod.subreddit_set.all():
-            if sub.name_lower == sub_query.name_lower:
+            if sub.name_lower == sub_query.name_lower or sub.name_lower in prev_checked:
                 continue
-            edge_set.append({
+            edge = {
                 'mod'  : mod.username,
                 'from' : sub_query.name_lower,
                 'to'   : sub.name_lower
-            })
+            }
+            edge_set.append(edge)
+            ancestor_set.append(sub.name_lower)
 
+
+    if depth_cap > len(prev_checked) + 1:
+        new_checked = prev_checked + [sub]
+        for sub in ancestor_set:
+            edge_set += get_edges(sub, new_checked, depth_cap)
     return edge_set
 
 class EdgeViewSet(viewsets.ViewSet):
     def list(self, request, sub_pk=None):
-        edges = get_edges(sub_pk.lower())
+        edges = get_edges(sub_pk.lower(), [], 2)
         return response.Response(edges)
 
 class StatusView(views.APIView):
