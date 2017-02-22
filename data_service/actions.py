@@ -246,7 +246,7 @@ class RandomAction(TimerAction):
     def action_impl(self, iters=1):
         for _ in range(2 * iters):
             b = False
-            if r.random() <= 0.05:
+            if r.random() <= 0.02:
                 b = True
             sub = self.reddit.random_subreddit(nsfw=b)
             print("Querying " + sub.display_name + " randomly")
