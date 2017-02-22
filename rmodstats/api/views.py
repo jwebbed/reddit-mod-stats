@@ -1,18 +1,24 @@
-from rest_framework import viewsets, views, response
-from rest_framework import status
+from rest_framework import viewsets, views, mixins, response, status
 from django.db.models import Max, Count
+from django.shortcuts import get_object_or_404
 from datetime import datetime
 from queue import Queue
 from rmodstats.api.models import Subreddit, User, Failure, ModRelation
-from rmodstats.api.serializers import SubredditSerializer, UserSerializer, FailureSerializer
+from rmodstats.api.serializers import ListViewSubredditSerializer, RetrieveSubredditSerializer, UserSerializer, FailureSerializer
 
 
-class SubredditViewSet(viewsets.ReadOnlyModelViewSet):
+class SubredditViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     """
     API endpoint that allows subreddits to be viewed
     """
     queryset = Subreddit.objects.filter(forbidden=False)
-    serializer_class = SubredditSerializer
+    serializer_class = ListViewSubredditSerializer
+
+    def retrieve(self, request, pk=None):
+        queryset = Subreddit.objects.filter(forbidden=False)
+        sub = get_object_or_404(queryset, pk=pk.lower())
+        serializer = RetrieveSubredditSerializer(sub)
+        return response.Response(serializer.data)
 
 class ModViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -39,7 +45,7 @@ class StatusView(views.APIView):
 
 def get_edges(sub):
     edge_set = []
-    sub_query = Subreddit.objects.get(name_lower=sub.lower())
+    sub_query = Subreddit.objects.get(name_lower=sub)
     for mod in sub_query.mods.all():
         for sub in mod.subreddit_set.all():
             if sub.name_lower == sub_query.name_lower:
@@ -56,5 +62,5 @@ def get_edges(sub):
 
 class EdgeViewSet(viewsets.ViewSet):
     def list(self, request, sub_pk=None):
-        edges = get_edges(sub_pk)
+        edges = get_edges(sub_pk.lower())
         return response.Response(edges)

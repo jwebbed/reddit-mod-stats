@@ -13,12 +13,17 @@ class SubredditEventSerializer(serializers.ModelSerializer):
         model = SubredditEvent
         fields = ('recorded', 'previous_check', 'new', 'details',)
 
-class SubredditSerializer(serializers.ModelSerializer):
+class RetrieveSubredditSerializer(serializers.ModelSerializer):
     events = SubredditEventSerializer(many=True, read_only=True)
 
     class Meta:
         model = Subreddit
         fields = ('name', 'subscribers', 'nsfw', 'last_checked', 'last_changed', 'mods', 'events', )
+
+class ListViewSubredditSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subreddit
+        fields = ('name', 'subscribers', 'nsfw', 'last_checked', 'last_changed', 'mods',)
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
