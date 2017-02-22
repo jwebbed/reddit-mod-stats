@@ -305,6 +305,7 @@ class SubAction(TimerAction):
         for sub in subs:
             print("Querying " + sub)
             query_sub(self.reddit, sub)
+        return True
 
 def get_actions(reddit):
     return (
