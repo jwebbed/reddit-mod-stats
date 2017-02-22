@@ -4,7 +4,6 @@ from rmodstats.api import views
 
 router = routers.DefaultRouter()
 router.register(r'subreddit', views.SubredditViewSet)
-router.register(r'mods', views.ModViewSet, base_name='user')
 
 edge_router = routers.NestedSimpleRouter(router, r'subreddit', lookup='sub')
 edge_router.register(r'edge', views.EdgeViewSet, base_name='subreddit-edge')

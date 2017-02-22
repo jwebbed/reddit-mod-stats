@@ -25,11 +25,6 @@ class ListViewSubredditSerializer(serializers.ModelSerializer):
         model = Subreddit
         fields = ('name', 'subscribers', 'nsfw', 'last_checked', 'last_changed', 'mods',)
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ('username', 'subreddit_set',)
-
 class FailureSerializer(serializers.ModelSerializer):
     class Meta:
         model = Failure
