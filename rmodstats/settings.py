@@ -19,7 +19,19 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
+# Dear Random Passerby,
+# If you're looking at this code and are reacting *gasp* the secret key is 
+# on github, do not fret. At this particularly moment none of the modules
+# that actually use the secret key are enabled. You could probably argue 
+# the fact that I've just left the API open is a bad thing but I'm just 
+# developing and I'm not particularly worried about security with this
+# and I will never have any kind of extensive user system (101 statements
+# developers come to regret right here tbh). However, I will do this 
+# properly at some point maybe I guess (I will 100% if I actually put
+# this into production beyond the casual messing around). Anyways, the 
+# tl;dr is: h8rs gon h8.
+# regards,
+# jwebbed
 SECRET_KEY = 'i1m7ui3&cr&4@#h@xu#3%*fw2%i3bvhj70$k28)8^p0j+_-sae'
 
 # SECURITY WARNING: don't run with debug turned on in production!
