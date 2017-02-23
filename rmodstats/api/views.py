@@ -39,20 +39,20 @@ def get_edges(initial_sub):
 
         visited_subs.add(sub)
         local_subs = set()
-        sub_query = Subreddit.objects.get(name_lower=sub)
-        for mod in sub_query.mods.all():
-            for child_sub in mod.subreddit_set.all():
-                if child_sub.name_lower == sub_query.name_lower:
+        sub_query = Subreddit.objects.only('mods').get(name_lower=sub)
+        for mod in sub_query.mods.all().prefetch_related('subreddit_set'):
+            for child_sub in mod.subreddit_set.values_list('name_lower', flat=True):
+                if child_sub == sub_query.name_lower:
                     continue
 
-                if child_sub.name_lower in edge_set[sub]:
-                    edge_set[sub][child_sub.name_lower].append(mod.username)
+                if child_sub in edge_set[sub]:
+                    edge_set[sub][child_sub].append(mod.username)
                 else:
-                    edge_set[sub][child_sub.name_lower] = [mod.username]
+                    edge_set[sub][child_sub] = [mod.username]
 
-                if child_sub.name_lower not in visited_subs and child_sub.name_lower not in local_subs:
-                    sub_queue.put(child_sub.name_lower)
-                    local_subs.add(child_sub.name_lower)
+                if child_sub not in visited_subs and child_sub not in local_subs:
+                    sub_queue.put(child_sub)
+                    local_subs.add(child_sub)
 
     edge_list = []
     for outer in edge_set:
