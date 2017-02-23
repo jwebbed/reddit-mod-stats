@@ -20,15 +20,15 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # Dear Random Passerby,
-# If you're looking at this code and are reacting *gasp* the secret key is 
+# If you're looking at this code and are reacting *gasp* the secret key is
 # on github, do not fret. At this particularly moment none of the modules
-# that actually use the secret key are enabled. You could probably argue 
-# the fact that I've just left the API open is a bad thing but I'm just 
+# that actually use the secret key are enabled. You could probably argue
+# the fact that I've just left the API open is a bad thing but I'm just
 # developing and I'm not particularly worried about security with this
 # and I will never have any kind of extensive user system (101 statements
-# developers come to regret right here tbh). However, I will do this 
+# developers come to regret right here tbh). However, I will do this
 # properly at some point maybe I guess (I will 100% if I actually put
-# this into production beyond the casual messing around). Anyways, the 
+# this into production beyond the casual messing around). Anyways, the
 # tl;dr is: h8rs gon h8.
 # regards,
 # jwebbed
@@ -77,6 +77,16 @@ TEMPLATES = [
         },
     },
 ]
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
 
 WSGI_APPLICATION = 'rmodstats.wsgi.application'
 
