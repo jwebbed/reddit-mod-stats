@@ -33,12 +33,11 @@ def get_edges(initial_sub):
         sub = sub_queue.get()
         if sub in visited_subs:
             continue
-        #print('visiting ' + sub)
 
         edge_set[sub] = {}
-
         visited_subs.add(sub)
         local_subs = set()
+        
         sub_query = Subreddit.objects.only('mods').get(name_lower=sub)
         for mod in sub_query.mods.all().prefetch_related('subreddit_set'):
             for child_sub in mod.subreddit_set.values_list('name_lower', flat=True):
