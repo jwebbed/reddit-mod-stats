@@ -6,35 +6,40 @@ import prawcore
 from rmodstats.api.models import User, Subreddit, SubredditEvent, SubredditEventDetail, ModRelation
 from data_service.termination import check_terminate
 
-
 def query_sub(r, sub):
     global terminate
     now = datetime.now()
     sub_obj = r.subreddit(sub)
-    sub_model = Subreddit.objects.get_or_create(name_lower=sub.lower(), defaults={'forbidden' : False})
     try:
-        sub_model[0].subscribers = sub_obj.subscribers
-        sub_model[0].name = sub_obj.display_name
-        sub_model[0].nsfw = sub_obj.over18
-        sub_model[0].save()
+        sub_obj.display_name
     except prawcore.exceptions.PrawcoreException as e:
         print(e)
+        sub_model = Subreddit.objects.get_or_create(name_lower=sub.lower())
         sub_model[0].forbidden = True
         sub_model[0].save()
         return
 
+    process_query(sub_obj, now)
+    check_terminate()
+
+def process_query(query, now):
+    sub_model = Subreddit.objects.get_or_create(name_lower=query.display_name.lower(), defaults={'forbidden' : False})
+    sub_model[0].subscribers = query.subscribers
+    sub_model[0].name = query.display_name
+    sub_model[0].nsfw = query.over18
+    sub_model[0].save()
 
     if (sub_model[1] == True):
-        print("Added new sub " + sub)
+        print("Added new sub " + query.display_name)
 
     curr_mods = set(sub_model[0].mods.values_list('username', flat=True))
-    new_mods = set([m.name for m in sub_obj.moderator]) - set(('AutoModerator',))
+    new_mods = set([m.name for m in query.moderator]) - set(('AutoModerator',))
 
     additions = new_mods - curr_mods
     removals = curr_mods - new_mods
 
     if len(additions) > 0 or len(removals) > 0:
-        print('Mods of ' + sub + ' have changed')
+        print('Mods of ' + query.display_name + ' have changed')
 
         event = SubredditEvent(sub=sub_model[0], recorded=now, new=sub_model[1])
         if sub_model[1] == False:
@@ -66,5 +71,3 @@ def query_sub(r, sub):
 
     sub_model[0].last_checked = now
     sub_model[0].save()
-
-    check_terminate()
