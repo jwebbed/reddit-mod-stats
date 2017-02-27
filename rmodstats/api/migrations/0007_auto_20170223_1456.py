@@ -125,6 +125,12 @@ def update_graph(apps, schema_editor):
                         e = Edge(graph=g, source=other_sub, target=source_sub)
                         e.save()
                         e.mods.add(detail.user)
+
+                        source_sub.graph = g
+                        source_sub.save()
+
+                        other_sub.graph = g
+                        other_sub.save()
                     # Mod is mod of 2 subs, source_sub not in graph, other_sub in graph - Add source_sub to other_sub graph
                     elif source_sub.graph == None:
                         print('Addition - mod: ' + detail.user.username + ' source_sub: ' + source_sub.name_lower + ' other_sub: ' + other_sub.name_lower + ' - source_sub not in graph')
@@ -137,7 +143,7 @@ def update_graph(apps, schema_editor):
                         e.mods.add(detail.user)
 
                         source_sub.graph = other_sub.graph
-                        other_sub.save()
+                        source_sub.save()
                     # Mod is mod of other_sub not in graph - Add other sub to graph
                     elif other_sub.graph == None:
                         print('Addition - mod: ' + detail.user.username + ' source_sub: ' + source_sub.name_lower + ' other_sub: ' + other_sub.name_lower + ' - other_sub not in graph')
