@@ -30,7 +30,7 @@ def process_query(query, now):
     sub_model[0].save()
 
     if (sub_model[1] == True):
-        print("Added new sub " + sub)
+        print("Added new sub " + query.display_name)
 
     curr_mods = set(sub_model[0].mods.values_list('username', flat=True))
     new_mods = set([m.name for m in query.moderator]) - set(('AutoModerator',))
