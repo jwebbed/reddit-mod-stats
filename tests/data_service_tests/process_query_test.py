@@ -26,16 +26,12 @@ class FakeRedditQuery:
                 break
 
 class ProcessQueryTestCase(TestCase):
-    def setUp(self):
-        pass
-
     def assertModsCorrect(self, sub, mods):
         modset = set(mods)
         for mod in sub.mods.all():
             self.assertIn(mod.username, modset)
             modset.remove(mod.username)
         self.assertTrue(len(modset) == 0)
-
 
     def test_two_queries_no_mod_changes(self):
         reddit_query = FakeRedditQuery('test_sub', 1000, nsfw=False, moderators=['mod1', 'mod2'])
@@ -46,7 +42,7 @@ class ProcessQueryTestCase(TestCase):
         process_query(reddit_query, t1)
         process_query(reddit_query, t2)
 
-        sub = Subreddit.objects.get(name='test_sub')
+        sub = Subreddit.objects.get(name_lower='test_sub')
         events = sub.events.all()
 
         self.assertTrue(len(events) == 1)
@@ -69,7 +65,7 @@ class ProcessQueryTestCase(TestCase):
         reddit_query.add_mod('mod3')
         process_query(reddit_query, t2)
 
-        sub = Subreddit.objects.get(name='test_sub')
+        sub = Subreddit.objects.get(name_lower='test_sub')
         events = sub.events.all()
 
         event = events[1]
@@ -99,7 +95,7 @@ class ProcessQueryTestCase(TestCase):
         reddit_query.remove_mod('mod1')
         process_query(reddit_query, t2)
 
-        sub = Subreddit.objects.get(name='test_sub')
+        sub = Subreddit.objects.get(name_lower='test_sub')
         events = sub.events.all()
 
         event = events[1]
@@ -118,3 +114,10 @@ class ProcessQueryTestCase(TestCase):
         self.assertTrue(detail.addition == False)
 
         self.assertModsCorrect(sub, ['mod2'])
+
+    def test_name_lower_valid(self):
+        reddit_query = FakeRedditQuery('TEST_SUB', 1000)
+        process_query(reddit_query, datetime.now())
+        sub = Subreddit.objects.get(name='TEST_SUB')
+
+        self.assertEqual(sub.name_lower, 'test_sub')
