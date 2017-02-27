@@ -32,7 +32,7 @@ class Subreddit(models.Model):
 
 class SubredditEvent(models.Model):
     sub = models.ForeignKey(Subreddit, related_name='events')
-    recorded = models.DateTimeField(auto_now_add=True)
+    recorded = models.DateTimeField()
     previous_check = models.DateTimeField(null=True)
     new = models.BooleanField()
 
