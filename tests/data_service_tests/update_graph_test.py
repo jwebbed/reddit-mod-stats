@@ -45,7 +45,15 @@ class UpdateGraphTestCase(TestCase):
         process_query(reddit_query, t6)
 
     def assertEdgeRels(self, edge, current_mods=[], former_mods=[]):
-        pass
+        for mod in current_mods:
+            rel = EdgeModRelation.objects.get_or_create(edge=edge, mod=mod)
+            self.assertTrue(not rel[1])
+            self.assertTrue(rel[0].current_mod_source)
+
+        for mod in former_mods:
+            rel = EdgeModRelation.objects.get_or_create(edge=edge, mod=mod)
+            self.assertTrue(not rel[1])
+            self.assertTrue(not rel[0].current_mod_source)
 
     def test_no_graph(self):
         # node6 should have no graph
@@ -79,4 +87,4 @@ class UpdateGraphTestCase(TestCase):
         self.assertTrue(edge_source_5.target == sub_node_4)
 
         self.assertEdgeRels(edge_source_4, current_mods=['mod3'])
-        self.assertEdgeRels(edge_source_4, current_mods=['mod3'])
+        self.assertEdgeRels(edge_source_5, current_mods=['mod3'])
