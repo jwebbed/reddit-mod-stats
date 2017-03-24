@@ -17,22 +17,40 @@ class Action(ABC):
 
     @abstractmethod
     def perform(self, now=None):
+        '''
+        Abstract method that should attempt to perform the implemented action.
+        It should also return True iff the action was performed (i.e. a query
+        was made), and return False otherwise.
+        '''
         pass
 
     @abstractmethod
     def ready(self, now):
         '''
-        Returns the number of seconds from input datetime, now, until this action
-        is ready to perform.
+        Abstract method that should return the number of seconds from input
+        datetime, now, until this action is ready to perform.
         '''
         pass
 
     @abstractmethod
     def action_impl(self, iters=None):
+        '''
+        Abstract method that should perform the action of the given subclass.
+        Should return True iff the action was sucessfully performed and must
+        return False otherwise.
+        '''
         pass
 
 @abstractmethod
 class TimerAction(Action):
+    '''
+    A timer action is an action that is performed periodically on a timer. It is
+    implemented with it's own table where it stores the last time the action
+    was performed and will perform said action if the timedelta has expired.
+
+    This is an abstract class and requires a subclass to implement an action
+    implementation in order to be used.
+    '''
     def __init__(self, reddit, name, delta, strict=False):
         super().__init__(reddit)
 
@@ -59,7 +77,7 @@ class TimerAction(Action):
     def perform(self, now=None):
         '''
         Attempts to perform the implemented action. Returns True if action was
-        performed (and a query was made), returns false otherwise
+        performed (and a query was made), returns false otherwise.
         '''
         if not now:
             now = datetime.now()
@@ -81,6 +99,19 @@ class TimerAction(Action):
         return performed
 
 class RecentlyChangedAction(Action):
+    '''
+    Queries subreddits based on which are most recently changed. The logic
+    behind this action is that a subreddit that has recently changed is likely
+    to have another subsequent change the mods are changing the mods around.
+    The frequency is determined by the following algorithm:
+
+    * Assume `d` is the ammount of time since a sub has last been changed
+    * If the sub has not been checked in 2 ** (log2(d)) * 30 seconds, check it
+
+    Because this doesn't set a nescessary frequency for being checked, we cannot
+    calculate an absolute frequency with which subs will be checked, just if
+    this action is called and there are some subs that can be checked, they will.
+    '''
     def __init__(self, reddit):
         super().__init__(reddit)
         self.next_time = datetime.now()
@@ -150,7 +181,8 @@ class SizeAction(Action):
     Queries subreddits with a frequency that is a function of the subreddits
     size (number of subscribers). The frequency is determined by the following
     algorithm:
-    * Brake subs into n bins size 2^(i + 8) starting at i = 0
+
+    * Break subs into n bins size 2^(i + 8) starting at i = 0
     * Check all the subs in the ith bin every 2^(i - 1) * 45 minutes
 
     Something to note, all bins are checked at least once every 6 hours, so i
