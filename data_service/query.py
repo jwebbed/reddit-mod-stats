@@ -6,20 +6,24 @@ import prawcore
 from rmodstats.api.models import User, Subreddit, SubredditEvent, SubredditEventDetail, ModRelation, Graph, Edge, EdgeModRelation
 from data_service.termination import check_terminate
 
-def update_graph(event):
+def update_graph(event, verbose=False):
+    def printf(*args):
+        if verbose == True:
+            print(args)
+
     source_sub = event.sub
     for detail in event.details.all():
         if detail.addition == False:
             #print("Remove " + detail.user.username + ' from ' + detail.event.sub.name_lower)
             for edge in Edge.objects.filter(source=detail.event.sub):
                 for rel in EdgeModRelation.objects.filter(edge=edge, mod=detail.user):
-                    print('Found with source: ' + rel.edge.source.name_lower + ' target: ' + rel.edge.target.name_lower)
+                    printf('Found with source: ' + rel.edge.source.name_lower + ' target: ' + rel.edge.target.name_lower)
                     rel.current_mod_source = False
                     rel.save()
 
             for edge in Edge.objects.filter(target=detail.event.sub):
                 for rel in EdgeModRelation.objects.filter(edge=edge, mod=detail.user):
-                    print('Found with source: ' + rel.edge.source.name_lower + ' target: ' + rel.edge.target.name_lower)
+                    printf('Found with source: ' + rel.edge.source.name_lower + ' target: ' + rel.edge.target.name_lower)
                     rel.current_mod_target = False
                     rel.save()
         elif detail.addition == True:
@@ -31,7 +35,7 @@ def update_graph(event):
                 # Mod is mod of 2 subs, neither in a graph - Make a new graph
                 if source_sub.graph == None or other_sub.graph == None:
                     if source_sub.graph == None and other_sub.graph == None:
-                        print('Addition - mod: ' + detail.user.username + ' source_sub: ' + source_sub.name_lower + ' other_sub: ' + other_sub.name_lower + ' - neither sub in graph')
+                        printf('Addition - mod: ' + detail.user.username + ' source_sub: ' + source_sub.name_lower + ' other_sub: ' + other_sub.name_lower + ' - neither sub in graph')
                         g = Graph(valid=True)
                         g.save()
 
@@ -41,12 +45,12 @@ def update_graph(event):
                         other_sub.graph = g
                         other_sub.save()
                     elif source_sub.graph == None:
-                        print('Addition - mod: ' + detail.user.username + ' source_sub: ' + source_sub.name_lower + ' other_sub: ' + other_sub.name_lower + ' - source_sub not in graph')
+                        printf('Addition - mod: ' + detail.user.username + ' source_sub: ' + source_sub.name_lower + ' other_sub: ' + other_sub.name_lower + ' - source_sub not in graph')
                         g = other_sub.graph
                         source_sub.graph = g
                         source_sub.save()
                     elif other_sub.graph == None:
-                        print('Addition - mod: ' + detail.user.username + ' source_sub: ' + source_sub.name_lower + ' other_sub: ' + other_sub.name_lower + ' - other_sub not in graph')
+                        printf('Addition - mod: ' + detail.user.username + ' source_sub: ' + source_sub.name_lower + ' other_sub: ' + other_sub.name_lower + ' - other_sub not in graph')
                         g = source_sub.graph
                         other_sub.graph = g
                         other_sub.save()
@@ -63,7 +67,7 @@ def update_graph(event):
                     emr.save()
                 # Mod is mod of other sub(s) in graph - add this mod to the mod list of the edges (both directions)
                 elif source_sub.graph == other_sub.graph:
-                    print('Addition - mod: ' + detail.user.username + ' source_sub: ' + source_sub.name_lower + ' other_sub: ' + other_sub.name_lower + ' - both subs in same graph')
+                    printf('Addition - mod: ' + detail.user.username + ' source_sub: ' + source_sub.name_lower + ' other_sub: ' + other_sub.name_lower + ' - both subs in same graph')
                     e = Edge.objects.get_or_create(graph=other_sub.graph, source=source_sub, target=other_sub)
                     emr = EdgeModRelation.objects.get_or_create(edge=e[0], mod=detail.user)
                     if emr[1] == False:
@@ -77,7 +81,7 @@ def update_graph(event):
                         emr[0].save()
                 # Mod is mod of other sub(s) outside graph - Merge these 2 graphs
                 elif source_sub.graph != other_sub.graph:
-                    print('Addition - mod: ' + detail.user.username + ' source_sub: ' + source_sub.name_lower + ' other_sub: ' + other_sub.name_lower + ' - both subs in different graph')
+                    printf('Addition - mod: ' + detail.user.username + ' source_sub: ' + source_sub.name_lower + ' other_sub: ' + other_sub.name_lower + ' - both subs in different graph')
                     g1 = source_sub.graph
                     g2 = other_sub.graph
                     if g1.subreddit_set.count() >= g2.subreddit_set.count():
@@ -120,18 +124,22 @@ def query_sub(r, sub):
         sub_model[0].save()
         return
 
-    process_query(sub_obj, now)
+    process_query(sub_obj, now, True)
     check_terminate()
 
-def process_query(query, now):
+def process_query(query, now, verbose=False):
+    def printf(*args):
+        if verbose == True:
+            print(args)
+
     sub_model = Subreddit.objects.get_or_create(name_lower=query.display_name.lower(), defaults={'forbidden' : False})
     sub_model[0].subscribers = query.subscribers
     sub_model[0].name = query.display_name
     sub_model[0].nsfw = query.over18
     sub_model[0].save()
 
-    if (sub_model[1] == True):
-        print("Added new sub " + query.display_name)
+    if sub_model[1] == True:
+        printf("Added new sub " + query.display_name)
 
     curr_mods = set(sub_model[0].mods.values_list('username', flat=True))
     new_mods = set([m.name for m in query.moderator]) - set(('AutoModerator',))
@@ -140,7 +148,7 @@ def process_query(query, now):
     removals = curr_mods - new_mods
 
     if len(additions) > 0 or len(removals) > 0:
-        print('Mods of ' + query.display_name + ' have changed')
+        printf('Mods of ' + query.display_name + ' have changed')
 
         event = SubredditEvent(sub=sub_model[0], recorded=now, new=sub_model[1])
         if sub_model[1] == False:
@@ -149,7 +157,7 @@ def process_query(query, now):
 
         relations = []
         if len(additions) > 0:
-            print('Added: ' + str(additions))
+            printf('Added: ' + str(additions))
             for mod in additions:
                 user_query = User.objects.get_or_create(username=mod)
                 relations.append(SubredditEventDetail(event=event, user=user_query[0], addition=True))
@@ -160,7 +168,7 @@ def process_query(query, now):
 
         if len(removals) > 0:
             assert(sub_model[1] == False)
-            print('Removed: ' + str(removals))
+            printf('Removed: ' + str(removals))
             for mod in removals:
                 user_query = User.objects.get(username=mod)
                 relations.append(SubredditEventDetail(event=event, user=user_query, addition=False))
@@ -169,7 +177,7 @@ def process_query(query, now):
 
         SubredditEventDetail.objects.bulk_create(relations)
         sub_model[0].last_changed = now
-        update_graph(event)
+        update_graph(event, verbose)
 
     sub_model[0].last_checked = now
     sub_model[0].save()
