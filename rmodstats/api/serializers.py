@@ -18,12 +18,12 @@ class RetrieveSubredditSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Subreddit
-        fields = ('name', 'subscribers', 'nsfw', 'last_checked', 'last_changed', 'mods', 'events', )
+        fields = ('name', 'subscribers', 'graph', 'nsfw', 'last_checked', 'last_changed', 'mods', 'events',)
 
 class ListViewSubredditSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subreddit
-        fields = ('name', 'subscribers', 'nsfw', 'last_checked', 'last_changed', 'mods',)
+        fields = ('name', 'subscribers', 'graph', 'nsfw', 'last_checked', 'last_changed', 'mods',)
 
 class FailureSerializer(serializers.ModelSerializer):
     class Meta:
