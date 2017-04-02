@@ -9,7 +9,7 @@ from data_service.termination import check_terminate
 def update_graph(event, verbose=False):
     def printf(*args):
         if verbose == True:
-            print(args)
+            print(*args)
 
     source_sub = event.sub
     for detail in event.details.all():
@@ -130,7 +130,7 @@ def query_sub(r, sub):
 def process_query(query, now, verbose=False):
     def printf(*args):
         if verbose == True:
-            print(args)
+            print(*args)
 
     sub_model = Subreddit.objects.get_or_create(name_lower=query.display_name.lower(), defaults={'forbidden' : False})
     sub_model[0].subscribers = query.subscribers
