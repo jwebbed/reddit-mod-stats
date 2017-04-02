@@ -6,8 +6,8 @@ from django.db.models import Max, Count
 from django.shortcuts import get_object_or_404
 from django.core.cache import cache
 
-from rmodstats.api.models import Subreddit, User, Failure, ModRelation
-from rmodstats.api.serializers import ListViewSubredditSerializer, RetrieveSubredditSerializer, FailureSerializer
+from rmodstats.api.models import Subreddit, User, Failure, ModRelation, Graph
+from rmodstats.api.serializers import ListViewSubredditSerializer, RetrieveSubredditSerializer, FailureSerializer, RetrieveGraphSerializer, ListGraphSerializer
 
 
 class SubredditViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -22,6 +22,20 @@ class SubredditViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         sub = get_object_or_404(queryset, pk=pk.lower())
         serializer = RetrieveSubredditSerializer(sub)
         return response.Response(serializer.data)
+
+class GraphViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    '''
+    API endpoint that exposes subreddit mod graphs
+    '''
+    queryset = Graph.objects.all()
+    serializer_class = ListGraphSerializer
+
+    def retrieve(self, request, pk=None, format=None):
+        queryset = Graph.objects.all()
+        graph = get_object_or_404(queryset, pk=pk)
+        serializer = RetrieveGraphSerializer(graph)
+        return response.Response(serializer.data)
+
 
 class StatusView(views.APIView):
     def get(self, request, format=None):
