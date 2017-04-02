@@ -28,6 +28,7 @@ class Subreddit(models.Model):
     forbidden = models.BooleanField(default=False, db_index=True)
     nsfw = models.BooleanField(default=False)
     mods = models.ManyToManyField(User, through='ModRelation')
+    graph = models.ForeignKey('Graph', null=True)
 
 class SubredditEvent(models.Model):
     sub = models.ForeignKey(Subreddit, related_name='events')
@@ -51,3 +52,18 @@ class LastChecked(models.Model):
 class Failure(models.Model):
     time = models.DateTimeField(auto_now_add=True)
     traceback = models.TextField()
+
+class Graph(models.Model):
+    valid = models.BooleanField(default=False)
+
+class Edge(models.Model):
+    graph = models.ForeignKey(Graph)
+    source = models.ForeignKey(Subreddit, related_name='+')
+    target = models.ForeignKey(Subreddit, related_name='+')
+    mods = models.ManyToManyField(User, through='EdgeModRelation')
+
+class EdgeModRelation(models.Model):
+    edge = models.ForeignKey(Edge)
+    mod = models.ForeignKey(User)
+    current_mod_source = models.BooleanField(default=True)
+    current_mod_target = models.BooleanField(default=True)

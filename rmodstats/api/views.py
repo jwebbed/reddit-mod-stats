@@ -1,10 +1,13 @@
+from datetime import datetime
+from queue import Queue
+
 from rest_framework import viewsets, views, mixins, response, status
 from django.db.models import Max, Count
 from django.shortcuts import get_object_or_404
-from datetime import datetime
-from queue import Queue
-from rmodstats.api.models import Subreddit, User, Failure, ModRelation
-from rmodstats.api.serializers import ListViewSubredditSerializer, RetrieveSubredditSerializer, FailureSerializer
+from django.core.cache import cache
+
+from rmodstats.api.models import Subreddit, User, Failure, ModRelation, Graph
+from rmodstats.api.serializers import ListViewSubredditSerializer, RetrieveSubredditSerializer, FailureSerializer, RetrieveGraphSerializer, ListGraphSerializer
 
 
 class SubredditViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
@@ -20,25 +23,19 @@ class SubredditViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
         serializer = RetrieveSubredditSerializer(sub)
         return response.Response(serializer.data)
 
-def get_edges(sub):
-    edge_set = []
-    sub_query = Subreddit.objects.get(name_lower=sub)
-    for mod in sub_query.mods.all():
-        for sub in mod.subreddit_set.all():
-            if sub.name_lower == sub_query.name_lower:
-                continue
-            edge_set.append({
-                'mod'  : mod.username,
-                'from' : sub_query.name_lower,
-                'to'   : sub.name_lower
-            })
+class GraphViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    '''
+    API endpoint that exposes subreddit mod graphs
+    '''
+    queryset = Graph.objects.all()
+    serializer_class = ListGraphSerializer
 
-    return edge_set
+    def retrieve(self, request, pk=None, format=None):
+        queryset = Graph.objects.all()
+        graph = get_object_or_404(queryset, pk=pk)
+        serializer = RetrieveGraphSerializer(graph)
+        return response.Response(serializer.data)
 
-class EdgeViewSet(viewsets.ViewSet):
-    def list(self, request, sub_pk=None):
-        edges = get_edges(sub_pk.lower())
-        return response.Response(edges)
 
 class StatusView(views.APIView):
     def get(self, request, format=None):
