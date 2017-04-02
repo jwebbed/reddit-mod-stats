@@ -14,6 +14,7 @@ def update_graph(event, verbose=False):
     source_sub = event.sub
     for detail in event.details.all():
         if detail.addition == False:
+            printf('Processing event detail which removes ' + detail.user.username + ' from ' + source_sub.name)
             #print("Remove " + detail.user.username + ' from ' + detail.event.sub.name_lower)
             for edge in Edge.objects.filter(source=detail.event.sub):
                 for rel in EdgeModRelation.objects.filter(edge=edge, mod=detail.user):
@@ -27,6 +28,7 @@ def update_graph(event, verbose=False):
                     rel.current_mod_target = False
                     rel.save()
         elif detail.addition == True:
+            printf('Processing event detail which adds ' + detail.user.username + ' to ' + source_sub.name)
             for other_sub in detail.user.subreddit_set.all():
                 if other_sub == source_sub:
                     continue
